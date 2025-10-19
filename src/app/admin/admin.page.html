@@ -39,37 +39,17 @@
           <ion-icon name="storefront-outline" slot="start"></ion-icon>
           Ver Catálogo
         </ion-button>
-        <!-- Botón para activar/desactivar modo debug -->
+        <!-- Botón temporal para limpiar categorías duplicadas -->
         <ion-button 
-          fill="clear" 
+          fill="outline" 
           size="small" 
-          (click)="toggleDebugMode()"
-          [color]="showDebugMode ? 'danger' : 'medium'">
-          <ion-icon [name]="showDebugMode ? 'bug' : 'bug-outline'" slot="start"></ion-icon>
-          {{showDebugMode ? 'Salir Debug' : 'Debug'}}
+          (click)="cleanDuplicateCategories()"
+          color="warning">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Limpiar Duplicados
         </ion-button>
       </div>
     </div>
-  </div>
-
-  <!-- Botones de prueba temporales - solo visible en modo debug -->
-  <div *ngIf="showDebugMode" style="padding: 10px; background: #f0f0f0; margin: 10px; border-radius: 8px; border-left: 4px solid #ff6b6b;">
-    <h3>🧪 Modo Debug Activado</h3>
-    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
-      Estos botones son para pruebas y debugging. Revisa la consola del navegador (F12) para ver los logs.
-    </p>
-    <ion-button fill="outline" (click)="testFirebaseConnection()" color="primary" size="small">
-      <ion-icon name="cloud-outline" slot="start"></ion-icon>
-      Probar Firebase
-    </ion-button>
-    <ion-button fill="outline" (click)="testDatabaseProducts()" color="tertiary" size="small">
-      <ion-icon name="server-outline" slot="start"></ion-icon>
-      Verificar BD
-    </ion-button>
-    <ion-button fill="outline" (click)="testProductCreation()" color="secondary" size="small">
-      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-      Crear Producto Prueba
-    </ion-button>
   </div>
 
   <!-- Controles de búsqueda y filtrado -->
@@ -88,14 +68,20 @@
 
     <!-- Filtro por categorías -->
     <div class="category-filter">
-      <ion-segment [(ngModel)]="selectedCategory" (ionChange)="onCategoryChange($event.detail.value?.toString())">
-        <ion-segment-button value="all">
-          <ion-label>Todos</ion-label>
-        </ion-segment-button>
-        <ion-segment-button *ngFor="let category of categories" [value]="category.id">
-          <ion-label>{{category.name}}</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+      <ion-item lines="none" class="category-select-item">
+        <ion-icon name="filter" slot="start" color="medium"></ion-icon>
+        <ion-select 
+          [(ngModel)]="selectedCategory" 
+          (ionChange)="onCategoryFilterChange($event.detail.value?.toString())"
+          placeholder="Filtrar por categoría"
+          interface="popover"
+          class="category-select">
+          <ion-select-option value="all">Todas las categorías</ion-select-option>
+          <ion-select-option *ngFor="let category of categories" [value]="category.id">
+            {{category.name}} ({{getProductsCountByCategory(category.id)}})
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
     </div>
 
     <!-- Estadísticas rápidas -->
@@ -180,7 +166,7 @@
           <!-- Header con nombre y categoría -->
           <div class="product-header">
             <h3 class="product-name" (click)="editProductInfo(product)">{{product.name}}</h3>
-            <span class="product-category">{{getCategoryName(product.categoryId || product.category?.id)}}</span>
+            <span class="product-category">{{getCategoryName(product.categoryId || product.category.id)}}</span>
           </div>
           
           <!-- Descripción editable -->
@@ -339,16 +325,17 @@
             </ion-input>
           </ion-item>
 
-          <ion-item>
-            <ion-label position="stacked">Descripción Completa *</ion-label>
-            <ion-textarea 
+          <div class="native-form-item">
+            <label class="native-label">Descripción Completa *</label>
+            <textarea 
               [(ngModel)]="productForm.description" 
               name="description"
               required
-              rows="3"
-              placeholder="Descripción detallada del producto">
-            </ion-textarea>
-          </ion-item>
+              rows="4"
+              placeholder="Descripción detallada del producto"
+              class="native-textarea">
+            </textarea>
+          </div>
 
           <ion-item>
             <ion-label position="stacked">Precio (SOLES) *</ion-label>
@@ -362,17 +349,19 @@
             </ion-input>
           </ion-item>
 
-          <ion-item>
-            <ion-label position="stacked">Categoría *</ion-label>
-            <ion-select 
+          <div class="native-form-item">
+            <label class="native-label">Categoría *</label>
+            <select 
               [(ngModel)]="productForm.categoryId" 
               name="category"
-              required>
-              <ion-select-option *ngFor="let category of categories" [value]="category.id">
+              required
+              class="native-select">
+              <option value="">Selecciona una categoría</option>
+              <option *ngFor="let category of categories" [value]="category.id">
                 {{category.name}}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Detalles adicionales -->
@@ -401,23 +390,27 @@
           </ion-item>
 
           <!-- Switches -->
-          <ion-item>
-            <ion-label>Disponible</ion-label>
-            <ion-toggle 
-              [(ngModel)]="productForm.isAvailable" 
-              name="available"
-              slot="end">
-            </ion-toggle>
-          </ion-item>
+          <div class="native-form-item">
+            <label class="native-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="productForm.isAvailable" 
+                name="available"
+                class="native-checkbox">
+              Disponible
+            </label>
+          </div>
 
-          <ion-item>
-            <ion-label>Producto Destacado</ion-label>
-            <ion-toggle 
-              [(ngModel)]="productForm.featured" 
-              name="featured"
-              slot="end">
-            </ion-toggle>
-          </ion-item>
+          <div class="native-form-item">
+            <label class="native-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="productForm.featured" 
+                name="featured"
+                class="native-checkbox">
+              Producto Destacado
+            </label>
+          </div>
         </div>
 
         <!-- Ingredientes -->
@@ -519,15 +512,50 @@
         <div class="form-section">
           <div class="section-header">
             <h3>Imágenes del Producto</h3>
-            <ion-button 
-              fill="outline" 
-              size="small"
-              (click)="selectImageSource()">
-              <ion-icon name="camera" slot="start"></ion-icon>
-              Agregar Foto
-            </ion-button>
+            <div class="photo-buttons">
+              <ion-button 
+                fill="outline" 
+                size="small"
+                (click)="selectPhotoSource()">
+                <ion-icon name="camera" slot="start"></ion-icon>
+                Cámara
+              </ion-button>
+              <ion-button 
+                fill="outline" 
+                size="small"
+                color="secondary"
+                (click)="selectPhotoSource()">
+                <ion-icon name="images" slot="start"></ion-icon>
+                Galería
+              </ion-button>
+              <ion-button 
+                fill="outline" 
+                size="small"
+                color="tertiary"
+                (click)="addImageByURL()">
+                <ion-icon name="link" slot="start"></ion-icon>
+                URL
+              </ion-button>
+            </div>
           </div>
 
+          <!-- Imagen principal -->
+          <div class="images-container" *ngIf="productForm.imageUrl">
+            <div class="image-item main-image">
+              <img [src]="productForm.imageUrl" [alt]="productForm.name">
+              <div class="image-label">Imagen Principal</div>
+              <ion-button 
+                fill="clear" 
+                size="small"
+                color="danger"
+                class="remove-image-btn"
+                (click)="removeMainImage()">
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Imágenes adicionales -->
           <div class="images-container" *ngIf="productForm.images.length > 0">
             <div 
               *ngFor="let image of productForm.images; let i = index" 
@@ -544,7 +572,7 @@
             </div>
           </div>
 
-          <div *ngIf="productForm.images.length === 0" class="no-images">
+          <div *ngIf="!productForm.imageUrl && productForm.images.length === 0" class="no-images">
             <ion-icon name="image-outline"></ion-icon>
             <p>No hay imágenes agregadas</p>
           </div>

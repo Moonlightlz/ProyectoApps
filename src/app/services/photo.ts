@@ -17,11 +17,33 @@ export class PhotoService {
   constructor(private storage: Storage) { }
 
   /**
+   * Solicitar permisos de cámara
+   */
+  async requestCameraPermissions(): Promise<boolean> {
+    try {
+      console.log('PhotoService: Solicitando permisos de cámara');
+      const permissions = await Camera.requestPermissions();
+      console.log('PhotoService: Permisos obtenidos:', permissions);
+      return permissions.camera === 'granted' || permissions.camera === 'limited';
+    } catch (error) {
+      console.error('PhotoService: Error solicitando permisos:', error);
+      return false;
+    }
+  }
+
+  /**
    * Capturar foto desde cámara o galería
    */
   async takePhoto(options: PhotoOptions = { source: 'camera' }): Promise<string | null> {
     try {
       console.log('PhotoService: Iniciando captura de foto con opciones:', options);
+      
+      // Solicitar permisos primero
+      const hasPermissions = await this.requestCameraPermissions();
+      if (!hasPermissions) {
+        console.error('PhotoService: No se obtuvieron permisos de cámara');
+        throw new Error('Se requieren permisos de cámara para continuar');
+      }
       
       const image = await Camera.getPhoto({
         quality: options.quality || 70,
@@ -34,7 +56,7 @@ export class PhotoService {
       return image.dataUrl || null;
     } catch (error) {
       console.error('PhotoService: Error capturing photo:', error);
-      return null;
+      throw error; // Re-lanzar el error para que sea manejado por el componente
     }
   }
 

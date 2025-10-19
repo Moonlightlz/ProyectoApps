@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { ProductService } from '../services/product.service';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
+import { PhotoService } from '../services/photo';
 import { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
 
 @Component({
@@ -29,7 +30,6 @@ export class AdminPage implements OnInit, OnDestroy {
   
   // Formulario de producto
   showProductForm = false;
-  showDebugMode = false; // Control para mostrar/ocultar botones de debug
   editingProduct: Product | null = null;
   productForm = {
     name: '',
@@ -72,6 +72,7 @@ export class AdminPage implements OnInit, OnDestroy {
     private productService: ProductService,
     private userService: UserService,
     private authService: AuthService,
+    private photoService: PhotoService,
     private router: Router,
     private loadingController: LoadingController,
     private alertController: AlertController,
@@ -92,41 +93,26 @@ export class AdminPage implements OnInit, OnDestroy {
 
   private async checkAdminAccess() {
     try {
-      console.log('AdminPage: Verificando acceso de administrador...');
-      
-      // Verificar si está logueado
       if (!this.authService.isLoggedIn()) {
-        console.log('AdminPage: No está logueado');
         await this.showToast('Debes iniciar sesión para acceder.', 'danger');
         this.router.navigate(['/login']);
         return;
       }
 
       const currentUser = this.authService.getCurrentUser();
-      console.log('AdminPage: Usuario actual:', currentUser);
       
-      // Si es un usuario de Firebase, verificar por email primero
       if (currentUser) {
-        console.log('AdminPage: Usuario Firebase encontrado, email:', currentUser.email);
-        
-        // Verificar por email si es admin
         if (currentUser.email) {
           const isAdminByEmail = this.userService.isAdminEmail(currentUser.email);
-          console.log('AdminPage: ¿Es admin por email?', isAdminByEmail);
-          
           if (isAdminByEmail) {
             this.isAdmin = true;
-            console.log('AdminPage: Acceso concedido por email de admin');
             return;
           }
         }
         
-        // Verificar por UID como respaldo
         this.isAdmin = await this.userService.isAdmin(currentUser.uid);
-        console.log('AdminPage: ¿Es admin por UID?', this.isAdmin);
         
         if (!this.isAdmin) {
-          console.log('AdminPage: Usuario de Firebase no es admin');
           await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
           this.router.navigate(['/tabs/catalog']);
           return;
@@ -134,25 +120,18 @@ export class AdminPage implements OnInit, OnDestroy {
         return;
       }
 
-      // Si es un usuario demo (credenciales de prueba)
       const username = localStorage.getItem('username');
       const isLoggedInFlag = localStorage.getItem('isLoggedIn');
-      console.log('AdminPage: Username en localStorage:', username);
-      console.log('AdminPage: isLoggedIn en localStorage:', isLoggedInFlag);
       
       if (username === 'admin' && isLoggedInFlag === 'true') {
-        console.log('AdminPage: Usuario demo admin verificado');
         this.isAdmin = true;
         return;
       }
 
-      // Si llegamos aquí, no es admin
-      console.log('AdminPage: Acceso denegado - no es administrador');
       await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
       this.router.navigate(['/tabs/catalog']);
       
     } catch (error) {
-      console.error('Error verificando acceso de admin:', error);
       await this.showToast('Error verificando permisos de administrador.', 'danger');
       this.router.navigate(['/tabs/catalog']);
     }
@@ -165,6 +144,11 @@ export class AdminPage implements OnInit, OnDestroy {
     await loading.present();
 
     try {
+      // Limpiar datos existentes para evitar acumulación
+      this.products = [];
+      this.categories = [];
+      this.filteredProducts = [];
+      
       // Cargar productos y categorías en paralelo
       const [products, categories] = await Promise.all([
         this.productService.getAllProducts(),
@@ -172,11 +156,23 @@ export class AdminPage implements OnInit, OnDestroy {
       ]);
 
       this.products = products || [];
-      this.categories = categories || [];
+      
+      // Limpiar categorías existentes y crear conjunto único
+      const rawCategories = categories || [];
+      const uniqueCategoryMap = new Map();
+      
+      // Usar Map para garantizar unicidad por ID
+      rawCategories.forEach(category => {
+        if (category && category.id) {
+          uniqueCategoryMap.set(category.id, category);
+        }
+      });
+      
+      // Convertir Map a array
+      this.categories = Array.from(uniqueCategoryMap.values());
       this.filteredProducts = [...this.products];
       
     } catch (error) {
-      console.error('Error cargando datos:', error);
       await this.showToast('Error al cargar los datos', 'danger');
     } finally {
       await loading.dismiss();
@@ -189,7 +185,8 @@ export class AdminPage implements OnInit, OnDestroy {
     this.filterProducts();
   }
 
-  onCategoryChange(category: string | undefined) {
+  // Filtro de categorías (para la lista de productos)
+  onCategoryFilterChange(category: string | undefined) {
     this.selectedCategory = category || 'all';
     this.filterProducts();
   }
@@ -254,8 +251,8 @@ export class AdminPage implements OnInit, OnDestroy {
       description: '',
       shortDescription: '',
       price: 0,
-      categoryId: this.categories[0]?.id || '',
-      category: this.categories[0]?.name || '',
+      categoryId: '',
+      category: '',
       ingredients: [],
       nutritionalInfo: { calories: 0, protein: 0, carbs: 0, fat: 0, sugar: 0 },
       allergens: [],
@@ -270,11 +267,7 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   async saveProduct() {
-    console.log('=== INICIANDO GUARDADO DE PRODUCTO ===');
-    console.log('Datos del formulario:', this.productForm);
-    
     if (!this.validateProductForm()) {
-      console.log('Validación del formulario falló');
       return;
     }
 
@@ -285,10 +278,24 @@ export class AdminPage implements OnInit, OnDestroy {
 
     try {
       const currentUser = await this.authService.getCurrentUser();
-      console.log('Usuario actual:', currentUser);
       if (!currentUser) {
+        await loading.dismiss();
         await this.showToast('Error: Usuario no autenticado', 'danger');
         return;
+      }
+
+      // Procesar imagen si es dataUrl
+      let processedImageUrl = this.productForm.imageUrl;
+      if (this.productForm.imageUrl && this.productForm.imageUrl.startsWith('data:')) {
+        try {
+          const tempProductId = this.editingProduct?.id || Date.now().toString();
+          const uploadedUrl = await this.productService.uploadProductImage(this.productForm.imageUrl, tempProductId);
+          if (uploadedUrl) {
+            processedImageUrl = uploadedUrl;
+          }
+        } catch (error) {
+          // Continuar con dataUrl como fallback
+        }
       }
 
       if (this.editingProduct) {
@@ -302,10 +309,13 @@ export class AdminPage implements OnInit, OnDestroy {
           ingredients: this.productForm.ingredients,
           allergens: this.productForm.allergens,
           nutritionalInfo: this.productForm.nutritionalInfo,
-          imageUrl: this.productForm.imageUrl
+          imageUrl: processedImageUrl
         };
         await this.productService.updateProduct(this.editingProduct.id, updateRequest);
         await this.showToast('Producto actualizado correctamente', 'success');
+        await loading.dismiss();
+        this.closeProductForm();
+        await this.loadData();
       } else {
         // Crear nuevo producto
         const createRequest: CreateProductRequest = {
@@ -316,28 +326,25 @@ export class AdminPage implements OnInit, OnDestroy {
           ingredients: this.productForm.ingredients,
           allergens: this.productForm.allergens,
           nutritionalInfo: this.productForm.nutritionalInfo,
-          imageUrl: this.productForm.imageUrl
+          imageUrl: processedImageUrl
         };
-        console.log('Request de creación:', createRequest);
         const productId = await this.productService.createProduct(createRequest, currentUser.uid);
-        console.log('ID del producto creado:', productId);
         
         if (productId) {
           await this.showToast('Producto creado correctamente', 'success');
+          await loading.dismiss();
+          this.closeProductForm();
+          await this.loadData();
         } else {
+          await loading.dismiss();
           await this.showToast('Error al crear el producto', 'danger');
           return;
         }
       }
-
-      this.closeProductForm();
-      await this.loadData();
       
     } catch (error) {
-      console.error('Error guardando producto:', error);
-      await this.showToast('Error al guardar el producto', 'danger');
-    } finally {
       await loading.dismiss();
+      await this.showToast('Error al guardar el producto', 'danger');
     }
   }
 
@@ -424,143 +431,50 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   // Gestión de imágenes
-  // Función deprecada - ahora se usa selectImageSource()
   async addProductImage() {
-    await this.selectImageSource();
+    await this.selectPhotoSource();
   }
 
-  // Función deprecada - ahora se usa takePictureFromCamera()
+  // Función simplificada usando metodología del registro
   private async takePhoto() {
-    await this.takePictureFromCamera();
+    await this.selectPhotoSource();
   }
 
-
-
-  private async uploadProductImage(photo: any): Promise<string> {
-    const loading = await this.loadingController.create({
-      message: 'Subiendo imagen...'
-    });
-    await loading.present();
-
+  async selectPhotoSource() {
     try {
-      // Aquí se subiría la imagen a Firebase Storage
-      // Por ahora retornamos una URL de placeholder
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular carga
-      return 'https://via.placeholder.com/300x200.png?text=Producto';
+      const alert = await this.alertController.create({
+        header: 'Seleccionar foto',
+        message: '¿Cómo deseas agregar la foto del producto?',
+        buttons: [
+          {
+            text: 'Cámara',
+            handler: () => this.takePhotoFromCamera()
+          },
+          {
+            text: 'Galería',
+            handler: () => this.takePhotoFromGallery()
+          },
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          }
+        ]
+      });
+      await alert.present();
     } catch (error) {
-      throw error;
-    } finally {
-      await loading.dismiss();
+      await this.showToast('Error al acceder a las opciones de foto', 'danger');
     }
   }
 
-  // Método para alternar el modo debug
-  toggleDebugMode() {
-    this.showDebugMode = !this.showDebugMode;
-  }
 
-  // Método para verificar conexión con Firebase
-  async testFirebaseConnection() {
-    try {
-      console.log('=== PRUEBA COMPLETA DE FIREBASE ===');
-      
-      // 1. Probar conexión básica
-      console.log('1️⃣ Probando conexión básica...');
-      await (this.productService as any).testFirestoreConnection();
-      
-      // 2. Probar reglas de seguridad
-      console.log('2️⃣ Probando reglas de seguridad...');
-      await (this.productService as any).testFirestoreRules();
-      
-      // 3. Probar creación de categorías
-      console.log('3️⃣ Inicializando categorías...');
-      await this.productService.initializeDefaultCategories();
-      
-      // 4. Probar obtención de categorías
-      console.log('4️⃣ Obteniendo categorías...');
-      const categories = await this.productService.getCategories();
-      
-      await this.showToast(`✅ Firebase conectado. ${categories.length} categorías`, 'success');
-    } catch (error) {
-      console.error('❌ Error en prueba completa de Firebase:', error);
-      await this.showToast('❌ Error de conexión a Firebase', 'danger');
-    }
-  }
 
-  // Método para verificar qué productos están en la base de datos
-  async testDatabaseProducts() {
-    try {
-      console.log('=== VERIFICANDO PRODUCTOS EN BASE DE DATOS ===');
-      
-      // Obtener productos raw (sin filtros)
-      const rawProducts = await (this.productService as any).getAllProductsRaw();
-      console.log(`Total productos en BD: ${rawProducts.length}`);
-      
-      // Obtener productos disponibles (con filtros)
-      const availableProducts = await this.productService.getAvailableProducts();
-      console.log(`Productos disponibles: ${availableProducts.length}`);
-      
-      // Obtener todos los productos (método normal)
-      const allProducts = await this.productService.getAllProducts();
-      console.log(`Productos (método normal): ${allProducts.length}`);
-      
-      await this.showToast(
-        `BD: ${rawProducts.length} total, ${availableProducts.length} disponibles`, 
-        rawProducts.length > 0 ? 'success' : 'warning'
-      );
-      
-    } catch (error) {
-      console.error('Error verificando productos:', error);
-      await this.showToast('Error accediendo a la base de datos', 'danger');
-    }
-  }
+  // Función eliminada - ahora la subida se hace en saveProduct() igual que en el registro
 
-  // Método de prueba para crear producto básico
-  async testProductCreation() {
-    try {
-      console.log('=== PRUEBA DE CREACIÓN DE PRODUCTO ===');
-      
-      const currentUser = await this.authService.getCurrentUser();
-      if (!currentUser) {
-        await this.showToast('Usuario no autenticado', 'danger');
-        return;
-      }
 
-      // Primero, asegurar que tenemos categorías
-      const categories = await this.productService.getCategories();
-      console.log('Categorías disponibles para prueba:', categories);
-      
-      if (categories.length === 0) {
-        await this.showToast('No hay categorías disponibles', 'danger');
-        return;
-      }
 
-      const testProduct: CreateProductRequest = {
-        name: 'Producto de Prueba',
-        description: 'Este es un producto de prueba para verificar Firebase',
-        price: 10.50,
-        categoryId: categories[0].id, // Usar la primera categoría disponible
-        ingredients: ['Harina', 'Azúcar'],
-        allergens: ['Gluten'],
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Test'
-      };
 
-      console.log('Datos del producto de prueba:', testProduct);
 
-      const productId = await this.productService.createProduct(testProduct, currentUser.uid);
-      
-      if (productId) {
-        console.log('Producto de prueba creado con ID:', productId);
-        await this.showToast('Producto de prueba creado exitosamente', 'success');
-        await this.loadData(); // Recargar la lista
-      } else {
-        await this.showToast('Error al crear producto de prueba', 'danger');
-      }
-    } catch (error) {
-      console.error('Error en prueba de producto:', error);
-      await this.showToast(`Error en prueba: ${error}`, 'danger');
-    }
-  }
+
   toggleIngredient(ingredient: string) {
     const index = this.productForm.ingredients.indexOf(ingredient);
     if (index > -1) {
@@ -585,7 +499,6 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   goToCatalog() {
-    console.log('Navegando al catálogo desde admin...');
     this.showToast('Navegando al catálogo...', 'success');
     this.router.navigate(['/tabs/catalog']);
   }
@@ -595,6 +508,10 @@ export class AdminPage implements OnInit, OnDestroy {
     if (!categoryId) return '';
     const category = this.categories.find(cat => cat.id === categoryId);
     return category?.name || categoryId;
+  }
+
+  getProductsCountByCategory(categoryId: string): number {
+    return this.products.filter(product => product.categoryId === categoryId || product.category?.id === categoryId).length;
   }
 
   formatPrice(price: number): string {
@@ -633,121 +550,124 @@ export class AdminPage implements OnInit, OnDestroy {
 
   // Funciones para manejo de imágenes con cámara y galería
   
+
+
   /**
-   * Abre opciones para seleccionar imagen (cámara o galería)
+   * Tomar foto directamente con Capacitor (cámara o galería)
    */
-  async selectImageSource() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Seleccionar Imagen',
-      buttons: [
-        {
-          text: 'Tomar Foto',
-          icon: 'camera',
-          handler: () => {
-            this.takePictureFromCamera();
-          }
-        },
-        {
-          text: 'Elegir de Galería',
-          icon: 'images',
-          handler: () => {
-            this.selectFromGallery();
-          }
-        },
-        {
-          text: 'Ingresar URL',
-          icon: 'link',
-          handler: () => {
-            this.addImageByURL();
-          }
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close',
-          role: 'cancel'
+  async takePhotoDirectly(source: 'camera' | 'gallery') {
+    try {
+      const sourceText = source === 'camera' ? 'cámara' : 'galería';
+      
+      const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+      
+      const permissions = await Camera.requestPermissions();
+      
+      if (permissions.camera === 'granted') {
+        
+        const image = await Camera.getPhoto({
+          quality: 80,
+          allowEditing: true,
+          resultType: CameraResultType.DataUrl,
+          source: source === 'camera' ? CameraSource.Camera : CameraSource.Photos,
+          width: 800, // Redimensionar a 800px de ancho máximo
+          height: 600 // Redimensionar a 600px de alto máximo
+        });
+        
+        if (image.dataUrl) {
+          const resizedImage = await this.resizeImage(image.dataUrl, 300, 300);
+          this.addImageToForm(resizedImage);
+          await this.showToast(`¡Imagen de ${sourceText} agregada exitosamente!`, 'success');
+        } else {
+          await this.showToast(`No se obtuvo imagen de ${sourceText}`, 'danger');
         }
-      ]
+      } else {
+        await this.showToast('Permisos de cámara denegados', 'danger');
+      }
+      
+    } catch (error) {
+      await this.showToast('Error: ' + String(error), 'danger');
+    }
+  }
+
+  /**
+   * Redimensionar imagen para optimizar el tamaño de visualización
+   */
+  async resizeImage(dataUrl: string, maxWidth: number, maxHeight: number): Promise<string> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calcular nuevas dimensiones manteniendo aspecto
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dibujar imagen redimensionada
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convertir a dataUrl con calidad optimizada
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(resizedDataUrl);
+      };
+      
+      img.src = dataUrl;
     });
-    await actionSheet.present();
   }
 
   /**
-   * Tomar foto con la cámara
+   * Tomar foto con cámara (método simple como en registro)
    */
-  async takePictureFromCamera() {
+  async takePhotoFromCamera() {
     try {
-      // En un entorno real, aquí usarías Capacitor Camera
-      // Por ahora, simularemos con una URL de placeholder
-      const alert = await this.alertController.create({
-        header: 'Simulación de Cámara',
-        message: 'En una app real, esto abriría la cámara. Por ahora, ingresa una URL de imagen:',
-        inputs: [
-          {
-            name: 'imageUrl',
-            type: 'text',
-            placeholder: 'https://ejemplo.com/imagen.jpg'
-          }
-        ],
-        buttons: [
-          {
-            text: 'Cancelar',
-            role: 'cancel'
-          },
-          {
-            text: 'Agregar',
-            handler: (data) => {
-              if (data.imageUrl) {
-                this.addImageToForm(data.imageUrl);
-              }
-            }
-          }
-        ]
-      });
-      await alert.present();
+      const photoUrl = await this.photoService.takePhoto({ source: 'camera' });
+      if (photoUrl) {
+        this.addImageToForm(photoUrl);
+        await this.showToast('Foto agregada exitosamente', 'success');
+      } else {
+        await this.showToast('Error al capturar la foto', 'danger');
+      }
     } catch (error) {
-      console.error('Error tomando foto:', error);
-      await this.showToast('Error al acceder a la cámara', 'danger');
+      console.error('Error al acceder a la cámara:', error);
+      await this.showToast('Error al acceder a la cámara: ' + String(error), 'danger');
     }
   }
 
   /**
-   * Seleccionar imagen de la galería
+   * Seleccionar foto de galería (método simple como en registro)
    */
-  async selectFromGallery() {
+  async takePhotoFromGallery() {
     try {
-      // En un entorno real, aquí usarías Capacitor Camera para gallery
-      // Por ahora, simularemos con una URL de placeholder
-      const alert = await this.alertController.create({
-        header: 'Simulación de Galería',
-        message: 'En una app real, esto abriría la galería. Por ahora, ingresa una URL de imagen:',
-        inputs: [
-          {
-            name: 'imageUrl',
-            type: 'text',
-            placeholder: 'https://ejemplo.com/imagen.jpg'
-          }
-        ],
-        buttons: [
-          {
-            text: 'Cancelar',
-            role: 'cancel'
-          },
-          {
-            text: 'Agregar',
-            handler: (data) => {
-              if (data.imageUrl) {
-                this.addImageToForm(data.imageUrl);
-              }
-            }
-          }
-        ]
-      });
-      await alert.present();
+      const photoUrl = await this.photoService.takePhoto({ source: 'gallery' });
+      if (photoUrl) {
+        this.addImageToForm(photoUrl);
+        await this.showToast('Imagen agregada exitosamente', 'success');
+      } else {
+        await this.showToast('Error al seleccionar la foto', 'danger');
+      }
     } catch (error) {
-      console.error('Error accediendo a galería:', error);
-      await this.showToast('Error al acceder a la galería', 'danger');
+      console.error('Error al acceder a la galería:', error);
+      await this.showToast('Error al acceder a la galería: ' + String(error), 'danger');
     }
   }
+
+  // FUNCIONES ORIGINALES COMENTADAS - USAR LAS SIMPLES DE ARRIBA
+
 
   /**
    * Agregar imagen por URL
@@ -795,8 +715,17 @@ export class AdminPage implements OnInit, OnDestroy {
       // Si ya hay imagen principal, agregar a la lista de imágenes adicionales
       this.productForm.images.push(imageUrl);
     }
-    
-    this.showToast('Imagen agregada exitosamente', 'success');
+  }
+
+  /**
+   * Remover imagen principal
+   */
+  removeMainImage() {
+    this.productForm.imageUrl = '';
+    // Si hay imágenes adicionales, promover la primera a imagen principal
+    if (this.productForm.images.length > 0) {
+      this.productForm.imageUrl = this.productForm.images.shift() || '';
+    }
   }
 
   // Nuevos métodos para funcionalidad del administrador
@@ -1115,4 +1044,27 @@ export class AdminPage implements OnInit, OnDestroy {
       form.categoryId
     );
   }
+
+  /**
+   * Función temporal para limpiar categorías duplicadas
+   */
+  async cleanDuplicateCategories() {
+    const loading = await this.loadingController.create({
+      message: 'Limpiando categorías duplicadas...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    try {
+      await this.productService.cleanDuplicateCategories();
+      await this.showToast('Categorías duplicadas eliminadas exitosamente', 'success');
+      await this.loadData(); // Recargar datos
+    } catch (error) {
+      await this.showToast('Error al limpiar categorías duplicadas', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+
 }

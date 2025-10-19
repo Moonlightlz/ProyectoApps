@@ -25,9 +25,7 @@ export class ProductService {
     private firestore: Firestore,
     private storage: Storage
   ) { 
-    console.log('🔥 ProductService inicializado');
-    console.log('🔥 Firestore instance:', this.firestore);
-    this.testFirestoreConnection();
+    // this.testFirestoreConnection(); // Deshabilitado para producción
   }
 
   /**
@@ -113,11 +111,8 @@ export class ProductService {
   }
   async getAllProductsRaw(): Promise<any[]> {
     try {
-      console.log('🔍 OBTENIENDO TODOS LOS PRODUCTOS RAW (sin filtros)...');
       const productsRef = collection(this.firestore, 'products');
       const querySnapshot = await getDocs(productsRef);
-      
-      console.log(`📊 Total de documentos en Firestore: ${querySnapshot.size}`);
       
       const rawProducts: any[] = [];
       querySnapshot.forEach((doc) => {
@@ -125,13 +120,6 @@ export class ProductService {
         rawProducts.push({
           id: doc.id,
           ...data
-        });
-        console.log(`📄 Documento encontrado:`, {
-          id: doc.id,
-          name: data['name'],
-          isAvailable: data['isAvailable'],
-          createdAt: data['createdAt'],
-          createdBy: data['createdBy']
         });
       });
       
@@ -147,8 +135,13 @@ export class ProductService {
    */
   async initializeDefaultCategories(): Promise<void> {
     try {
-      console.log('Iniciando inicialización de categorías...');
       const categoriesRef = collection(this.firestore, 'categories');
+      
+      // Verificar si ya existen categorías para evitar duplicados
+      const existingCategoriesSnapshot = await getDocs(categoriesRef);
+      if (existingCategoriesSnapshot.size > 0) {
+        return; // Ya hay categorías, no hacer nada
+      }
       
       for (let i = 0; i < DEFAULT_CATEGORIES.length; i++) {
         const category = DEFAULT_CATEGORIES[i];
@@ -160,11 +153,8 @@ export class ProductService {
           updatedAt: new Date()
         };
         
-        console.log(`Guardando categoría ${i + 1}:`, categoryData);
         await setDoc(categoryDoc, categoryData);
       }
-      
-      console.log('Categorías por defecto inicializadas exitosamente');
     } catch (error) {
       console.error('Error inicializando categorías:', error);
       throw error;
@@ -180,24 +170,13 @@ export class ProductService {
       console.log('Datos recibidos:', productData);
       console.log('Admin UID:', adminUid);
       
-      // Verificar si las categorías están inicializadas, si no, inicializarlas
-      const categories = await this.getCategories();
-      console.log('Categorías disponibles:', categories);
-      if (categories.length === 0) {
-        console.log('Inicializando categorías por defecto...');
-        await this.initializeDefaultCategories();
-      }
-
-      // Obtener la categoría completa
+      // Obtener la categoría completa (getCategories se encarga de inicializar si es necesario)
       let category = await this.getCategoryById(productData.categoryId);
-      console.log('Categoría encontrada:', category);
       if (!category) {
         console.error('Categoría no encontrada:', productData.categoryId);
-        console.log('Intentando usar la primera categoría disponible...');
         const availableCategories = await this.getCategories();
         if (availableCategories.length > 0) {
           category = availableCategories[0];
-          console.log('Usando categoría:', category.name);
         } else {
           console.error('No hay categorías disponibles');
           return null;
@@ -587,13 +566,24 @@ export class ProductService {
       
       console.log(`Encontradas ${categories.length} categorías en Firestore`);
       
-      // Si no hay categorías en Firestore, devolver las categorías por defecto
+      // Si no hay categorías en Firestore, inicializarlas una sola vez
       if (categories.length === 0) {
-        console.log('No hay categorías en Firestore, usando categorías por defecto');
-        return DEFAULT_CATEGORIES.map((cat, index) => ({
-          ...cat,
-          id: `default-${index + 1}`
-        }));
+        await this.initializeDefaultCategories();
+        // Volver a obtener las categorías después de inicializarlas
+        const retrySnapshot = await getDocs(q);
+        const retryCategories: ProductCategory[] = [];
+        retrySnapshot.forEach((doc) => {
+          const data = doc.data();
+          retryCategories.push({
+            id: data['id'],
+            name: data['name'],
+            description: data['description'],
+            icon: data['icon'],
+            order: data['order'],
+            isActive: data['isActive']
+          } as ProductCategory);
+        });
+        return retryCategories;
       }
       
       return categories;
@@ -667,6 +657,45 @@ export class ProductService {
     } catch (error) {
       console.error('Error obteniendo categoría por ID:', error);
       return null;
+    }
+  }
+
+  /**
+   * Función para limpiar categorías duplicadas (usar solo una vez)
+   */
+  async cleanDuplicateCategories(): Promise<void> {
+    try {
+      const categoriesRef = collection(this.firestore, 'categories');
+      const querySnapshot = await getDocs(categoriesRef);
+      
+      const categoryNames = new Map<string, string[]>(); // nombre -> [ids]
+      
+      // Agrupar categorías por nombre
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const name = data['name'];
+        if (!categoryNames.has(name)) {
+          categoryNames.set(name, []);
+        }
+        categoryNames.get(name)!.push(doc.id);
+      });
+      
+      // Eliminar duplicados (mantener solo el primero de cada nombre)
+      for (const [name, ids] of categoryNames.entries()) {
+        if (ids.length > 1) {
+          console.log(`Encontrados ${ids.length} duplicados para "${name}". Eliminando ${ids.length - 1} duplicados.`);
+          // Mantener el primer ID, eliminar el resto
+          for (let i = 1; i < ids.length; i++) {
+            const docRef = doc(this.firestore, 'categories', ids[i]);
+            await deleteDoc(docRef);
+            console.log(`Eliminada categoría duplicada: ${ids[i]}`);
+          }
+        }
+      }
+      
+      console.log('Limpieza de categorías duplicadas completada');
+    } catch (error) {
+      console.error('Error limpiando categorías duplicadas:', error);
     }
   }
 }

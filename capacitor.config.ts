@@ -16,6 +16,12 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: "light",
       backgroundColor: "#ff6b9d"
+    },
+    Camera: {
+      source: "prompt",
+      quality: 90,
+      allowEditing: true,
+      resultType: "dataUrl"
     }
   }
 };

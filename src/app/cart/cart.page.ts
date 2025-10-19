@@ -57,7 +57,6 @@ import { Subscription } from 'rxjs';
     IonCard,
     IonCardHeader,
     IonCardTitle,
-    IonCardSubtitle,
     IonCardContent,
     IonButton,
     IonButtons,

@@ -2,6 +2,42 @@ ion-content {
   --background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
+// Responsive Design - Mobile First
+@media (max-width: 768px) {
+  // Reducir padding y margins en móviles
+  .admin-header {
+    padding: 16px 12px !important;
+    
+    .header-content {
+      flex-direction: column;
+      gap: 12px;
+      
+      .header-info h1 {
+        font-size: 22px !important;
+        text-align: center;
+      }
+      
+      .header-info p {
+        font-size: 14px !important;
+        text-align: center;
+      }
+    }
+  }
+  
+  // Controles más compactos en móvil
+  .controls-section {
+    margin-bottom: 12px;
+  }
+  
+  .search-container {
+    padding: 12px !important;
+  }
+  
+  .category-filter {
+    padding: 0 12px 12px !important;
+  }
+}
+
 // Header de administración
 .admin-header {
   background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
@@ -84,27 +120,26 @@ ion-content {
 .category-filter {
   padding: 0 16px 16px;
   
-  ion-segment {
-    --background: #f8f9fa;
-    border-radius: 25px;
-    padding: 4px;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  ion-segment-button {
-    --color: #666;
-    --color-checked: white;
-    --background-checked: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
-    --border-radius: 20px;
-    margin: 2px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-height: 36px;
+  .category-select-item {
+    --background: #fff;
+    --border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 0;
     
-    ion-label {
-      padding: 0 12px;
+    ion-select {
+      --placeholder-color: #666;
+      --placeholder-opacity: 0.8;
+      font-weight: 500;
+      font-size: 14px;
+      
+      &::part(text) {
+        color: #333;
+      }
+    }
+    
+    ion-icon {
+      margin-right: 8px;
+      font-size: 18px;
     }
   }
 }
@@ -466,6 +501,24 @@ ion-modal {
       --border-radius: 12px;
       height: 32px;
     }
+    
+    // Botones de fotos
+    .photo-buttons {
+      display: flex;
+      gap: 8px;
+      
+      ion-button {
+        --color: white;
+        --background: rgba(255,255,255,0.2);
+        --border-radius: 12px;
+        height: 32px;
+        min-width: auto;
+        
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+    }
   }
   
   ion-item {
@@ -488,6 +541,99 @@ ion-modal {
     ion-select {
       --color: #333;
       --placeholder-color: #999;
+    }
+  }
+
+  // Responsive mobile
+  @media (max-width: 768px) {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    
+    .section-header {
+      padding: 12px;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+      
+      h3 {
+        font-size: 14px;
+        width: 100%;
+      }
+      
+      .photo-buttons {
+        width: 100%;
+        justify-content: space-between;
+        
+        ion-button {
+          flex: 1;
+          height: 36px;
+          font-size: 12px;
+          
+          ion-icon {
+            font-size: 14px;
+          }
+        }
+      }
+      
+      ion-button:not(.photo-buttons ion-button) {
+        width: 100%;
+        height: 36px;
+      }
+    }
+    
+    ion-item {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      min-height: 48px;
+      
+      ion-label {
+        font-size: 14px;
+      }
+      
+      ion-input,
+      ion-textarea,
+      ion-select {
+        font-size: 14px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .section-header {
+      padding: 10px;
+      
+      h3 {
+        font-size: 13px;
+      }
+      
+      .photo-buttons {
+        gap: 4px;
+        
+        ion-button {
+          height: 32px;
+          font-size: 11px;
+          
+          ion-icon {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+    
+    ion-item {
+      --padding-start: 10px;
+      --padding-end: 10px;
+      min-height: 44px;
+      
+      ion-label {
+        font-size: 13px;
+      }
+      
+      ion-input,
+      ion-textarea,
+      ion-select {
+        font-size: 13px;
+      }
     }
   }
 }
@@ -521,6 +667,37 @@ ion-modal {
       transform: scale(1.05);
     }
   }
+
+  // Responsive mobile
+  @media (max-width: 768px) {
+    padding: 12px;
+    gap: 6px;
+    
+    ion-chip {
+      font-size: 12px;
+      height: 28px;
+      
+      &:hover {
+        transform: scale(1.02);
+      }
+      
+      &.selected {
+        transform: scale(1.02);
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px;
+    gap: 4px;
+    
+    ion-chip {
+      font-size: 11px;
+      height: 26px;
+      min-width: auto;
+      padding: 0 8px;
+    }
+  }
 }
 
 // Grid nutricional
@@ -539,6 +716,23 @@ ion-modal {
     
     &:nth-last-child(-n+2) {
       border-bottom: none;
+    }
+  }
+
+  // Responsive mobile
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    
+    ion-item {
+      border-right: none;
+      
+      &:not(:last-child) {
+        border-bottom: 1px solid #f0f0f0;
+      }
+      
+      &:last-child {
+        border-bottom: none;
+      }
     }
   }
 }
@@ -576,6 +770,51 @@ ion-modal {
       }
     }
   }
+
+  // Responsive mobile
+  @media (max-width: 768px) {
+    padding: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    
+    .image-item {
+      border-radius: 8px;
+      
+      img {
+        height: 80px;
+      }
+      
+      .remove-image-btn {
+        width: 28px;
+        height: 28px;
+        
+        ion-icon {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+    
+    .image-item {
+      img {
+        height: 70px;
+      }
+      
+      .remove-image-btn {
+        width: 24px;
+        height: 24px;
+        
+        ion-icon {
+          font-size: 12px;
+        }
+      }
+    }
+  }
 }
 
 .no-images {
@@ -591,6 +830,33 @@ ion-modal {
   p {
     margin: 0;
     font-size: 14px;
+  }
+
+  // Responsive mobile
+  @media (max-width: 768px) {
+    padding: 30px 12px;
+    
+    ion-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 10px;
+    
+    ion-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      font-size: 12px;
+    }
   }
 }
 
@@ -616,22 +882,32 @@ ion-modal {
       --background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
     }
   }
-}
 
-// Responsive design
-@media (max-width: 768px) {
-  .stats-container {
-    grid-template-columns: 1fr;
+  // Responsive mobile
+  @media (max-width: 768px) {
+    padding: 12px;
+    gap: 10px;
     
-    .stat-card {
-      .stat-info {
-        .stat-number {
-          font-size: 18px;
-        }
-      }
+    ion-button {
+      height: 44px;
+      font-size: 14px;
     }
   }
-  
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 8px;
+    
+    ion-button {
+      height: 40px;
+      font-size: 13px;
+    }
+  }
+}
+
+// Responsive adicional para product-item (ya que ahora está en products-grid)
+@media (max-width: 768px) {
   .product-item {
     flex-direction: column;
     
@@ -647,45 +923,17 @@ ion-modal {
     .product-actions {
       flex-direction: row;
       justify-content: center;
+      gap: 8px;
+      
+      ion-button {
+        font-size: 12px;
+        height: 32px;
+      }
     }
-  }
-  
-  .nutrition-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .form-actions {
-    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .admin-header {
-    padding: 16px;
-    
-    .header-info h1 {
-      font-size: 22px;
-      
-      .admin-icon {
-        font-size: 24px;
-      }
-    }
-  }
-  
-  .stats-container {
-    .stat-card {
-      padding: 12px;
-      
-      .stat-icon {
-        font-size: 20px;
-      }
-      
-      .stat-info .stat-number {
-        font-size: 16px;
-      }
-    }
-  }
-  
   .product-item {
     padding: 12px;
     
@@ -703,6 +951,15 @@ ion-modal {
         font-size: 18px;
       }
     }
+    
+    .product-actions {
+      gap: 6px;
+      
+      ion-button {
+        font-size: 11px;
+        height: 28px;
+      }
+    }
   }
 }
 
@@ -712,6 +969,18 @@ ion-modal {
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
   padding: 16px;
+  
+  // Responsive grid para móviles
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr; // Una sola columna en móvil
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px;
+    gap: 8px;
+  }
 }
 
 .product-card {
@@ -980,25 +1249,309 @@ ion-modal {
   }
 }
 
-// Responsive
+// Responsive para product-cards
 @media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 12px;
-  }
-  
   .product-card {
     .image-container {
       height: 180px;
+      
+      .availability-badge,
+      .featured-badge {
+        width: 32px;
+        height: 32px;
+        top: 8px;
+        
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+      
+      .featured-badge {
+        left: 8px;
+      }
+      
+      .availability-badge {
+        right: 8px;
+      }
     }
     
     .info-container {
       padding: 16px;
     }
     
+    .product-header {
+      margin-bottom: 10px;
+      
+      .product-name {
+        font-size: 18px;
+      }
+      
+      .product-category {
+        font-size: 11px;
+      }
+    }
+    
+    .description-container .product-description {
+      font-size: 13px;
+    }
+    
     .actions-container {
       padding: 12px 16px 16px;
     }
+  }
+}
+
+@media (max-width: 480px) {
+  .product-card {
+    .image-container {
+      height: 160px;
+      
+      .availability-badge,
+      .featured-badge {
+        width: 28px;
+        height: 28px;
+        top: 6px;
+        
+        ion-icon {
+          font-size: 14px;
+        }
+      }
+      
+      .featured-badge {
+        left: 6px;
+      }
+      
+      .availability-badge {
+        right: 6px;
+      }
+    }
+    
+    .info-container {
+      padding: 12px;
+    }
+    
+    .product-header {
+      margin-bottom: 8px;
+      
+      .product-name {
+        font-size: 16px;
+      }
+      
+      .product-category {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+    }
+    
+    .description-container {
+      margin-bottom: 12px;
+      
+      .product-description {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    }
+    
+    .price-container {
+      margin-bottom: 12px;
+    }
+    
+    .actions-container {
+      padding: 10px 12px 12px;
+      
+      .action-buttons {
+        gap: 6px;
+        
+        ion-button {
+          --padding-start: 12px;
+          --padding-end: 12px;
+          --padding-top: 10px;
+          --padding-bottom: 10px;
+          font-size: 13px;
+          
+          ion-icon {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Estilos básicos para formulario móvil */
+.form-section {
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --min-height: 60px;
+  }
+  
+  ion-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  ion-textarea {
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    min-height: 100px;
+  }
+  
+  ion-select {
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+  }
+  
+  ion-toggle {
+    margin: 8px 0;
+  }
+}
+
+/* Estilos para previsualización de imágenes */
+.images-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  
+  .image-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    
+    &.main-image {
+      border-color: #3880ff;
+      
+      .image-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(56, 128, 255, 0.9);
+        color: white;
+        font-size: 10px;
+        text-align: center;
+        padding: 4px;
+      }
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .remove-image-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+/* Elementos de formulario nativos para móvil */
+.native-form-item {
+  margin: 16px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  .native-label {
+    display: block;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+}
+
+.native-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box;
+  
+  &:focus {
+    outline: none;
+    border-color: #3880ff;
+    box-shadow: 0 0 0 2px rgba(56, 128, 255, 0.2);
+  }
+  
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.native-select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  background: white;
+  box-sizing: border-box;
+  
+  &:focus {
+    outline: none;
+    border-color: #3880ff;
+    box-shadow: 0 0 0 2px rgba(56, 128, 255, 0.2);
+  }
+}
+
+.native-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  vertical-align: middle;
+  accent-color: #3880ff;
+  
+  + .native-label {
+    display: inline-block;
+    margin-bottom: 0;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+}
+
+/* Mejoras específicas para móvil */
+@media (max-width: 768px) {
+  .native-form-item {
+    margin: 12px 8px;
+    padding: 16px;
+  }
+  
+  .native-textarea,
+  .native-select {
+    font-size: 16px; // Evita zoom en iOS
+    padding: 16px;
+    min-height: 48px; // Área táctil mínima
+  }
+  
+  .native-textarea {
+    min-height: 120px;
+  }
+  
+  .native-checkbox {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
   }
 }
