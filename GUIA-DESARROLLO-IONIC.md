@@ -137,13 +137,28 @@ ionic capacitor sync ios
 ionic capacitor run ios --prod
 ```
 
-## 📝 Próximos Pasos Recomendados
+## � Firebase Integrado
+
+Ya tienes **Firebase** instalado y configurado:
+- ✅ **Firebase SDK** + AngularFire
+- ✅ **Servicios base** creados (Auth, Firestore)
+- ✅ **Configuración** lista para usar
+
+**📖 Ver guía completa**: `FIREBASE-INTEGRATION.md`
+
+### Configuración rápida:
+1. Crear proyecto en [Firebase Console](https://console.firebase.google.com)
+2. Reemplazar configuración en `src/environments/environment.ts`
+3. Configurar app.config.ts (ver guía Firebase)
+
+## �📝 Próximos Pasos Recomendados
 
 1. **Probar la app**: `ionic serve`
-2. **Personalizar el tema** en `src/theme/variables.css`
-3. **Crear tu primera página personalizada**
-4. **Configurar tu backend/API** según necesites
-5. **Integrar APIs nativas** según necesites
+2. **Configurar Firebase** (ver FIREBASE-INTEGRATION.md)
+3. **Personalizar el tema** en `src/theme/variables.css`
+4. **Crear tu primera página personalizada**
+5. **Implementar autenticación Firebase**
+6. **Integrar APIs nativas** según necesites
 
 ## 🤝 Trabajo Colaborativo
 

@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 1
+      🔥 Firebase Test
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -9,9 +9,67 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
+      <ion-title size="large">Firebase Test</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <!-- Estado de la conexión -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Estado de Firebase</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ connectionStatus }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Agregar nuevo item -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Agregar Item</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input 
+          [(ngModel)]="newItemName" 
+          placeholder="Nombre del item"
+          clearInput="true">
+        </ion-input>
+      </ion-item>
+      <ion-button 
+        expand="block" 
+        (click)="addItem()" 
+        [disabled]="!newItemName.trim()">
+        Agregar a Firebase
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de items -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Items en Firebase ({{ items.length }})</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list *ngIf="items.length > 0; else noItems">
+        <ion-item *ngFor="let item of items">
+          <ion-label>
+            <h2>{{ item.name }}</h2>
+            <p>{{ item.createdAt?.toDate() | date:'short' }}</p>
+          </ion-label>
+          <ion-button 
+            fill="clear" 
+            color="danger" 
+            (click)="deleteItem(item.id)">
+            🗑️
+          </ion-button>
+        </ion-item>
+      </ion-list>
+      
+      <ng-template #noItems>
+        <p>No hay items aún. ¡Agrega el primero!</p>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>
