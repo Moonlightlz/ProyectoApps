@@ -1,23 +1,171 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>🧁 Menú & Tienda</ion-title>
+    <ion-title>🛍️ Catálogo</ion-title>
+    <!-- Botón de vista grid/list -->
+    <ion-button fill="clear" slot="end" (click)="toggleViewMode()">
+      <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Menú & Tienda</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Catálogo de Productos</ion-card-title>
-      <ion-card-subtitle>Descubre nuestros deliciosos productos</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Aquí encontrarás todos nuestros productos disponibles para pedido.</p>
-    </ion-card-content>
-  </ion-card>
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <ion-searchbar 
+      placeholder="Buscar productos..." 
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchChange($event)"
+      show-clear-button="focus">
+    </ion-searchbar>
+  </div>
+
+  <!-- Filtro por categorías -->
+  <div class="categories-container" *ngIf="categories.length > 0">
+    <ion-segment 
+      [(ngModel)]="selectedCategory" 
+      (ionChange)="onCategoryChange($event)"
+      scrollable="true">
+      <ion-segment-button value="all">
+        <ion-label>Todos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button *ngFor="let category of categories" [value]="category.id">
+        <ion-label>{{ category.name }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" *ngFor="let item of [1,2,3,4,5,6]">
+          <ion-card>
+            <ion-skeleton-text animated style="height: 150px;"></ion-skeleton-text>
+            <ion-card-content>
+              <ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 60%;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 40%;"></ion-skeleton-text>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- Vista Grid -->
+  <div *ngIf="!isLoading && viewMode === 'grid'" class="products-grid">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
+          <ion-card class="product-card" (click)="viewProductDetails(product)">
+            <div class="product-image-container">
+              <ion-img 
+                [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
+                [alt]="product.name"
+                class="product-image">
+              </ion-img>
+              <ion-button 
+                fill="clear" 
+                class="favorite-btn"
+                (click)="toggleFavorite(product); $event.stopPropagation()">
+                <ion-icon name="heart-outline"></ion-icon>
+              </ion-button>
+            </div>
+            
+            <ion-card-content>
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-description">{{ product.description | slice:0:50 }}...</p>
+              <div class="product-price">{{ formatPrice(product.price) }}</div>
+              
+              <ion-button 
+                expand="block" 
+                size="small" 
+                color="primary"
+                (click)="addToCart(product); $event.stopPropagation()">
+                <ion-icon name="add" slot="start"></ion-icon>
+                Agregar
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- Vista Lista -->
+  <div *ngIf="!isLoading && viewMode === 'list'" class="products-list">
+    <ion-card *ngFor="let product of filteredProducts" class="product-list-card" (click)="viewProductDetails(product)">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="4">
+            <div class="list-image-container">
+              <ion-img 
+                [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
+                [alt]="product.name"
+                class="list-product-image">
+              </ion-img>
+            </div>
+          </ion-col>
+          <ion-col size="8">
+            <ion-card-content class="list-content">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-description">{{ product.description }}</p>
+              <div class="product-category">
+                <ion-chip color="secondary" size="small">
+                  {{ product.category.name }}
+                </ion-chip>
+              </div>
+              <div class="list-actions">
+                <div class="product-price">{{ formatPrice(product.price) }}</div>
+                <div class="action-buttons">
+                  <ion-button 
+                    fill="clear" 
+                    size="small"
+                    (click)="toggleFavorite(product); $event.stopPropagation()">
+                    <ion-icon name="heart-outline"></ion-icon>
+                  </ion-button>
+                  <ion-button 
+                    size="small" 
+                    color="primary"
+                    (click)="addToCart(product); $event.stopPropagation()">
+                    <ion-icon name="add" slot="start"></ion-icon>
+                    Agregar
+                  </ion-button>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!isLoading && filteredProducts.length === 0" class="empty-state">
+    <ion-card>
+      <ion-card-content class="ion-text-center">
+        <ion-icon name="search" size="large" color="medium"></ion-icon>
+        <h2>No se encontraron productos</h2>
+        <p *ngIf="searchTerm">
+          No hay productos que coincidan con "{{ searchTerm }}"
+        </p>
+        <p *ngIf="!searchTerm">
+          No hay productos disponibles en este momento
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- FAB para administradores -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="isAdmin">
+    <ion-fab-button color="tertiary" (click)="goToAdminPanel()">
+      <ion-icon name="settings"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

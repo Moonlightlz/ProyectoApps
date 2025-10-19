@@ -1,0 +1,482 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Panel de Administración</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openProductForm()">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Header personalizado -->
+  <div class="admin-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1>
+          <ion-icon name="settings" class="admin-icon"></ion-icon>
+          Gestión de Productos
+        </h1>
+        <p>{{products.length}} productos • {{categories.length}} categorías</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles de búsqueda y filtrado -->
+  <div class="controls-section">
+    <!-- Barra de búsqueda -->
+    <div class="search-container">
+      <ion-searchbar
+        class="search-bar"
+        placeholder="Buscar productos..."
+        debounce="300"
+        (ionInput)="onSearchChange($event)"
+        [value]="searchTerm">
+        <ion-icon name="search" slot="start"></ion-icon>
+      </ion-searchbar>
+    </div>
+
+    <!-- Filtro por categorías -->
+    <div class="category-filter">
+      <ion-segment [(ngModel)]="selectedCategory" (ionChange)="onCategoryChange($event.detail.value?.toString())">
+        <ion-segment-button value="all">
+          <ion-label>Todos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button *ngFor="let category of categories" [value]="category.id">
+          <ion-label>{{category.name}}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <ion-icon name="cube" class="stat-icon"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-number">{{filteredProducts.length}}</span>
+          <span class="stat-label">Productos</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <ion-icon name="checkmark-circle" class="stat-icon available"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-number">{{getAvailableProductsCount()}}</span>
+          <span class="stat-label">Disponibles</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <ion-icon name="close-circle" class="stat-icon unavailable"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-number">{{getUnavailableProductsCount()}}</span>
+          <span class="stat-label">No disponibles</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Lista de productos -->
+  <div class="products-section">
+    <!-- Loading skeleton -->
+    <div *ngIf="loading" class="loading-skeleton">
+      <div class="skeleton-product" *ngFor="let item of [1,2,3,4]">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-text"></div>
+          <div class="skeleton-text short"></div>
+          <div class="skeleton-text medium"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos -->
+    <div *ngIf="!loading && filteredProducts.length > 0" class="products-list">
+      <div *ngFor="let product of filteredProducts" class="product-item">
+        <div class="product-image-container">
+          <img 
+            [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
+            [alt]="product.name"
+            class="product-image">
+          <div class="availability-badge" 
+               [class.available]="product.isAvailable" 
+               [class.unavailable]="!product.isAvailable">
+            <ion-icon [name]="product.isAvailable ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+          </div>
+        </div>
+        
+        <div class="product-info">
+          <div class="product-header">
+            <h3 class="product-name">{{product.name}}</h3>
+            <span class="product-category">{{getCategoryName(product.categoryId || product.category?.id)}}</span>
+          </div>
+          
+          <p class="product-description">{{product.description}}</p>
+          
+          <div class="product-details">
+            <span class="product-price">{{formatPrice(product.price)}}</span>
+            <div class="product-badges">
+              <ion-badge *ngIf="product.featured" color="warning">
+                <ion-icon name="star"></ion-icon>
+                Destacado
+              </ion-badge>
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="product-extra-info">
+            <div class="info-item" *ngIf="product.preparationTime">
+              <ion-icon name="time"></ion-icon>
+              <span>{{product.preparationTime}} min</span>
+            </div>
+            <div class="info-item" *ngIf="product.servingSize">
+              <ion-icon name="people"></ion-icon>
+              <span>{{product.servingSize}}</span>
+            </div>
+            <div class="info-item">
+              <ion-icon name="images"></ion-icon>
+              <span>{{(product.images?.length || 0) + (product.imageUrl ? 1 : 0)}} fotos</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-actions">
+          <ion-button 
+            fill="clear" 
+            size="small"
+            [color]="product.isAvailable ? 'success' : 'medium'"
+            (click)="toggleProductAvailability(product)">
+            <ion-icon [name]="product.isAvailable ? 'eye' : 'eye-off'"></ion-icon>
+          </ion-button>
+          
+          <ion-button 
+            fill="clear" 
+            size="small"
+            color="primary"
+            (click)="openProductForm(product)">
+            <ion-icon name="create"></ion-icon>
+          </ion-button>
+          
+          <ion-button 
+            fill="clear" 
+            size="small"
+            color="danger"
+            (click)="deleteProduct(product)">
+            <ion-icon name="trash"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!loading && filteredProducts.length === 0" class="empty-state">
+      <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+      <h3>No hay productos</h3>
+      <p *ngIf="searchTerm || selectedCategory !== 'all'">
+        No se encontraron productos con los filtros aplicados.
+      </p>
+      <p *ngIf="!searchTerm && selectedCategory === 'all'">
+        Comienza agregando tu primer producto.
+      </p>
+      <ion-button 
+        *ngIf="!searchTerm && selectedCategory === 'all'"
+        expand="block" 
+        (click)="openProductForm()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Agregar Producto
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- FAB para agregar producto -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="add-fab" (click)="openProductForm()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<!-- Modal de formulario de producto -->
+<ion-modal [isOpen]="showProductForm" (willDismiss)="closeProductForm()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          {{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}}
+        </ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeProductForm()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <form (ngSubmit)="saveProduct()" #productFormRef="ngForm">
+        <div class="form-section">
+          <!-- Información básica -->
+          <div class="section-header">
+            <h3>Información Básica</h3>
+          </div>
+          
+          <ion-item>
+            <ion-label position="stacked">Nombre del Producto *</ion-label>
+            <ion-input 
+              [(ngModel)]="productForm.name" 
+              name="name"
+              required
+              placeholder="Ej: Torta de Chocolate">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Descripción Corta</ion-label>
+            <ion-input 
+              [(ngModel)]="productForm.shortDescription" 
+              name="shortDescription"
+              placeholder="Breve descripción">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Descripción Completa *</ion-label>
+            <ion-textarea 
+              [(ngModel)]="productForm.description" 
+              name="description"
+              required
+              rows="3"
+              placeholder="Descripción detallada del producto">
+            </ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Precio (COP) *</ion-label>
+            <ion-input 
+              type="number" 
+              [(ngModel)]="productForm.price" 
+              name="price"
+              required
+              min="0"
+              step="500">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Categoría *</ion-label>
+            <ion-select 
+              [(ngModel)]="productForm.categoryId" 
+              name="category"
+              required>
+              <ion-select-option *ngFor="let category of categories" [value]="category.id">
+                {{category.name}}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <!-- Detalles adicionales -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Detalles Adicionales</h3>
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Tiempo de Preparación (minutos)</ion-label>
+            <ion-input 
+              type="number" 
+              [(ngModel)]="productForm.preparationTime" 
+              name="preparationTime"
+              min="0">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Tamaño de Porción</ion-label>
+            <ion-input 
+              [(ngModel)]="productForm.servingSize" 
+              name="servingSize"
+              placeholder="Ej: 8-10 porciones">
+            </ion-input>
+          </ion-item>
+
+          <!-- Switches -->
+          <ion-item>
+            <ion-label>Disponible</ion-label>
+            <ion-toggle 
+              [(ngModel)]="productForm.isAvailable" 
+              name="available"
+              slot="end">
+            </ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Producto Destacado</ion-label>
+            <ion-toggle 
+              [(ngModel)]="productForm.featured" 
+              name="featured"
+              slot="end">
+            </ion-toggle>
+          </ion-item>
+        </div>
+
+        <!-- Ingredientes -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Ingredientes</h3>
+          </div>
+          
+          <div class="chips-container">
+            <ion-chip 
+              *ngFor="let ingredient of availableIngredients"
+              [class.selected]="productForm.ingredients.includes(ingredient)"
+              (click)="toggleIngredient(ingredient)">
+              <ion-label>{{ingredient}}</ion-label>
+              <ion-icon 
+                *ngIf="productForm.ingredients.includes(ingredient)" 
+                name="checkmark" 
+                slot="end">
+              </ion-icon>
+            </ion-chip>
+          </div>
+        </div>
+
+        <!-- Alérgenos -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Alérgenos</h3>
+          </div>
+          
+          <div class="chips-container">
+            <ion-chip 
+              *ngFor="let allergen of availableAllergens"
+              [class.selected]="productForm.allergens.includes(allergen)"
+              (click)="toggleAllergen(allergen)"
+              color="warning">
+              <ion-label>{{allergen}}</ion-label>
+              <ion-icon 
+                *ngIf="productForm.allergens.includes(allergen)" 
+                name="checkmark" 
+                slot="end">
+              </ion-icon>
+            </ion-chip>
+          </div>
+        </div>
+
+        <!-- Información nutricional -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Información Nutricional (por porción)</h3>
+          </div>
+
+          <div class="nutrition-grid">
+            <ion-item>
+              <ion-label position="stacked">Calorías</ion-label>
+              <ion-input 
+                type="number" 
+                [(ngModel)]="productForm.nutritionalInfo.calories" 
+                name="calories"
+                min="0">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Proteínas (g)</ion-label>
+              <ion-input 
+                type="number" 
+                [(ngModel)]="productForm.nutritionalInfo.protein" 
+                name="protein"
+                min="0"
+                step="0.1">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Carbohidratos (g)</ion-label>
+              <ion-input 
+                type="number" 
+                [(ngModel)]="productForm.nutritionalInfo.carbs" 
+                name="carbs"
+                min="0"
+                step="0.1">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Grasas (g)</ion-label>
+              <ion-input 
+                type="number" 
+                [(ngModel)]="productForm.nutritionalInfo.fat" 
+                name="fat"
+                min="0"
+                step="0.1">
+              </ion-input>
+            </ion-item>
+          </div>
+        </div>
+
+        <!-- Imágenes -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Imágenes del Producto</h3>
+            <ion-button 
+              fill="outline" 
+              size="small"
+              (click)="addProductImage()">
+              <ion-icon name="camera" slot="start"></ion-icon>
+              Agregar Foto
+            </ion-button>
+          </div>
+
+          <div class="images-container" *ngIf="productForm.images.length > 0">
+            <div 
+              *ngFor="let image of productForm.images; let i = index" 
+              class="image-item">
+              <img [src]="image" [alt]="productForm.name">
+              <ion-button 
+                fill="clear" 
+                size="small"
+                color="danger"
+                class="remove-image-btn"
+                (click)="removeProductImage(i)">
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <div *ngIf="productForm.images.length === 0" class="no-images">
+            <ion-icon name="image-outline"></ion-icon>
+            <p>No hay imágenes agregadas</p>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="form-actions">
+          <ion-button 
+            type="button"
+            fill="outline" 
+            expand="block"
+            (click)="closeProductForm()">
+            Cancelar
+          </ion-button>
+          
+          <ion-button 
+            type="submit"
+            expand="block"
+            [disabled]="!productFormRef.form.valid">
+            {{editingProduct ? 'Actualizar' : 'Crear'}} Producto
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>

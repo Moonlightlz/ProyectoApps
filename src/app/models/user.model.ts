@@ -7,7 +7,14 @@ export interface User {
   emailVerified: boolean;
   createdAt: Date;
   lastLoginAt: Date;
+  role: UserRole;
   profile?: UserProfile;
+}
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin'
 }
 
 export interface UserProfile {
@@ -58,11 +65,13 @@ export interface CreateUserRequest {
   phone?: string;
   password: string;
   photoUrl?: string;
+  role?: UserRole; // Por defecto será USER
 }
 
 export interface UpdateUserRequest {
   displayName?: string;
   photoURL?: string;
   phoneNumber?: string;
+  role?: UserRole;
   profile?: Partial<UserProfile>;
 }

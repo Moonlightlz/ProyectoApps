@@ -10,12 +10,19 @@ import {
   where, 
   getDocs 
 } from '@angular/fire/firestore';
-import { User, UserProfile, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
+import { User, UserProfile, CreateUserRequest, UpdateUserRequest, UserRole } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+
+  // Emails de administradores predefinidos
+  private readonly ADMIN_EMAILS = [
+    'admin@pasteleria-diego.com',
+    'diego@pasteleria-diego.com',
+    'administrador@pasteleria-diego.com'
+  ];
 
   constructor(private firestore: Firestore) { }
 
@@ -75,6 +82,10 @@ export class UserService {
       }
       
       console.log('UserService: Creando nuevo perfil...');
+      // Determinar rol del usuario
+      const userRole = this.determineUserRole(userData.email);
+      console.log('UserService: Rol asignado:', userRole);
+      
       // Simplificar el objeto para evitar problemas de serialización
       const userProfile = {
         uid,
@@ -83,6 +94,7 @@ export class UserService {
         photoURL: userData.photoUrl || null,
         phoneNumber: userData.phone || null,
         emailVerified: false,
+        role: userRole,
         createdAt: new Date().toISOString(),
         lastLoginAt: new Date().toISOString(),
         profile: {
@@ -258,6 +270,89 @@ export class UserService {
     } catch (error) {
       console.error('Error updating notification preferences:', error);
       return false;
+    }
+  }
+
+  /**
+   * Determinar rol del usuario basado en email
+   */
+  private determineUserRole(email: string): UserRole {
+    if (this.ADMIN_EMAILS.includes(email.toLowerCase())) {
+      return UserRole.ADMIN;
+    }
+    return UserRole.USER;
+  }
+
+  /**
+   * Verificar si un usuario es administrador
+   */
+  async isAdmin(uid: string): Promise<boolean> {
+    try {
+      const user = await this.getUserProfile(uid);
+      return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Verificar si un usuario tiene permisos de administrador por email
+   */
+  isAdminEmail(email: string): boolean {
+    return this.ADMIN_EMAILS.includes(email.toLowerCase());
+  }
+
+  /**
+   * Actualizar rol de usuario (solo para super admin)
+   */
+  async updateUserRole(uid: string, newRole: UserRole, adminUid: string): Promise<boolean> {
+    try {
+      // Verificar que quien hace el cambio es super admin
+      const admin = await this.getUserProfile(adminUid);
+      if (admin?.role !== UserRole.SUPER_ADMIN) {
+        console.error('Solo super admin puede cambiar roles');
+        return false;
+      }
+
+      await this.updateUserProfile(uid, { role: newRole });
+      return true;
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtener usuarios por rol
+   */
+  async getUsersByRole(role: UserRole): Promise<User[]> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const q = query(usersRef, where('role', '==', role));
+      const querySnapshot = await getDocs(q);
+      
+      const users: User[] = [];
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        users.push({
+          uid: userData['uid'],
+          email: userData['email'],
+          displayName: userData['displayName'],
+          photoURL: userData['photoURL'],
+          phoneNumber: userData['phoneNumber'],
+          emailVerified: userData['emailVerified'],
+          role: userData['role'],
+          createdAt: userData['createdAt'],
+          lastLoginAt: userData['lastLoginAt'],
+          profile: userData['profile']
+        } as User);
+      });
+      
+      return users;
+    } catch (error) {
+      console.error('Error getting users by role:', error);
+      return [];
     }
   }
 

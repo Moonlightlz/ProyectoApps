@@ -82,7 +82,7 @@ export class LoginPage {
         await loading.dismiss();
         await this.showMessage('¡Bienvenido a Pastelería D\'Diego!', 'success');
         
-        // Navegar a la app principal
+        // Navegar a la app principal con tabs
         this.router.navigateByUrl('/tabs');
         
       } else {
