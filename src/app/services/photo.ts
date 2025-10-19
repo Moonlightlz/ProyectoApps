@@ -21,6 +21,8 @@ export class PhotoService {
    */
   async takePhoto(options: PhotoOptions = { source: 'camera' }): Promise<string | null> {
     try {
+      console.log('PhotoService: Iniciando captura de foto con opciones:', options);
+      
       const image = await Camera.getPhoto({
         quality: options.quality || 70,
         allowEditing: options.allowEditing || true,
@@ -28,9 +30,10 @@ export class PhotoService {
         source: options.source === 'camera' ? CameraSource.Camera : CameraSource.Photos
       });
 
+      console.log('PhotoService: Foto capturada exitosamente, tamaño dataUrl:', image.dataUrl?.length);
       return image.dataUrl || null;
     } catch (error) {
-      console.error('Error capturing photo:', error);
+      console.error('PhotoService: Error capturing photo:', error);
       return null;
     }
   }
@@ -40,19 +43,28 @@ export class PhotoService {
    */
   async uploadPhoto(dataUrl: string, userId: string): Promise<string | null> {
     try {
+      console.log('PhotoService: Iniciando upload de foto para usuario:', userId);
+      console.log('PhotoService: Tamaño de dataUrl:', dataUrl.length);
+      
       // Crear referencia única para la imagen
       const fileName = `profile-photos/${userId}/${Date.now()}.jpg`;
+      console.log('PhotoService: Nombre de archivo:', fileName);
+      
       const imageRef = ref(this.storage, fileName);
+      console.log('PhotoService: Referencia de Storage creada');
 
       // Subir imagen como data URL
+      console.log('PhotoService: Iniciando uploadString...');
       const uploadResult = await uploadString(imageRef, dataUrl, 'data_url');
+      console.log('PhotoService: Upload completado, obteniendo URL de descarga...');
       
       // Obtener URL de descarga
       const downloadURL = await getDownloadURL(uploadResult.ref);
+      console.log('PhotoService: URL de descarga obtenida:', downloadURL);
       
       return downloadURL;
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      console.error('PhotoService: Error uploading photo:', error);
       return null;
     }
   }

@@ -212,62 +212,104 @@ export class ProfilePage implements OnInit {
   }
 
   async changePhoto() {
-    const actionSheet = await this.alertController.create({
+    console.log('ProfilePage: Iniciando cambio de foto');
+    
+    const alert = await this.alertController.create({
       header: '📸 Cambiar Foto de Perfil',
       buttons: [
         {
           text: '📷 Tomar Foto',
-          handler: () => this.takePhoto('camera')
+          handler: () => {
+            console.log('ProfilePage: Usuario seleccionó cámara');
+            this.takePhoto('camera');
+          }
         },
         {
           text: '🖼️ Elegir de Galería',
-          handler: () => this.takePhoto('gallery')
+          handler: () => {
+            console.log('ProfilePage: Usuario seleccionó galería');
+            this.takePhoto('gallery');
+          }
         },
         {
           text: '👤 Elegir Avatar',
-          handler: () => this.selectAvatar()
+          handler: () => {
+            console.log('ProfilePage: Usuario seleccionó avatar');
+            this.selectAvatar();
+          }
         },
         {
           text: 'Cancelar',
-          role: 'cancel'
+          role: 'cancel',
+          handler: () => {
+            console.log('ProfilePage: Usuario canceló cambio de foto');
+          }
         }
       ]
     });
-    await actionSheet.present();
+    
+    await alert.present();
+    console.log('ProfilePage: AlertController presentado');
   }
 
   async takePhoto(source: 'camera' | 'gallery') {
-    if (!this.user) return;
+    console.log('ProfilePage: takePhoto iniciado con source:', source);
+    
+    if (!this.user) {
+      console.error('ProfilePage: No hay usuario activo');
+      await this.showToast('Error: No hay usuario activo', 'danger');
+      return;
+    }
 
     const loading = await this.loadingController.create({
       message: 'Procesando foto...',
       spinner: 'crescent'
     });
     await loading.present();
+    console.log('ProfilePage: Loading mostrado');
 
     try {
+      console.log('ProfilePage: Llamando photoService.takePhoto');
       const photo = await this.photoService.takePhoto({ source });
+      console.log('ProfilePage: Foto capturada:', photo ? 'Éxito' : 'Falló');
       
       if (photo) {
+        console.log('ProfilePage: Iniciando upload de foto');
         const photoUrl = await this.photoService.uploadPhoto(photo, `profile/${this.user.uid}`);
+        console.log('ProfilePage: Upload resultado:', photoUrl ? 'Éxito' : 'Falló');
         
         if (photoUrl) {
+          console.log('ProfilePage: Actualizando perfil con nueva foto URL');
+          
           // Actualizar foto en el perfil
-          await this.userService.updateUserProfile(this.user.uid, {
+          const updateResult = await this.userService.updateUserProfile(this.user.uid, {
             photoURL: photoUrl
           });
+          console.log('ProfilePage: Actualización de perfil resultado:', updateResult);
           
-          // Actualizar datos locales
-          this.user.photoURL = photoUrl;
-          
-          await this.showToast('Foto actualizada correctamente', 'success');
+          if (updateResult) {
+            // Actualizar datos locales
+            this.user.photoURL = photoUrl;
+            console.log('ProfilePage: Datos locales actualizados');
+            await this.showToast('Foto actualizada correctamente', 'success');
+          } else {
+            console.error('ProfilePage: Falló la actualización del perfil en Firestore');
+            await this.showToast('Error al guardar la foto en el perfil', 'danger');
+          }
+        } else {
+          console.error('ProfilePage: Falló el upload de la foto');
+          await this.showToast('Error al subir la foto', 'danger');
         }
+      } else {
+        console.log('ProfilePage: No se capturó ninguna foto');
+        await this.showToast('No se seleccionó ninguna foto', 'warning');
       }
       
     } catch (error) {
-      console.error('Error actualizando foto:', error);
-      await this.showToast('Error al actualizar la foto', 'danger');
+      console.error('ProfilePage: Error completo en takePhoto:', error);
+      await this.showToast('Error al actualizar la foto: ' + error, 'danger');
     } finally {
+      console.log('ProfilePage: Ocultando loading');
       await loading.dismiss();
     }
   }
