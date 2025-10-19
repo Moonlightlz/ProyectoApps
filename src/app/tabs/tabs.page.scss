@@ -1,1 +1,32 @@
+.cart-badge {
+  position: absolute;
+  top: 6px;
+  right: 20px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  font-size: 0.7em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transform: scale(0.9);
+  animation: bounceIn 0.3s ease-out;
+}
 
+ion-tab-button {
+  position: relative;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(0.9);
+  }
+}

@@ -50,7 +50,7 @@ export class AdminGuard implements CanActivate {
         console.log('AdminGuard: ¿Es admin por UID?', isAdmin);
         if (!isAdmin) {
           console.log('AdminGuard: Usuario de Firebase no es admin, redirigiendo a catalog');
-          this.router.navigate(['/catalog']);
+          this.router.navigate(['/tabs/catalog']);
           return false;
         }
         return true;
@@ -69,7 +69,7 @@ export class AdminGuard implements CanActivate {
 
       // Si no es admin, redirigir al catálogo
       console.log('AdminGuard: Usuario no es admin, redirigiendo a catalog');
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/tabs/catalog']);
       return false;
     } catch (error) {
       console.error('Error en AdminGuard:', error);

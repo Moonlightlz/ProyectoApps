@@ -26,11 +26,6 @@ export const routes: Routes = [
     loadComponent: () => import('./forgot-password/forgot-password.page').then( m => m.ForgotPasswordPage)
   },
   {
-    path: 'catalog',
-    loadComponent: () => import('./catalog/catalog.page').then( m => m.CatalogPage),
-    canActivate: [AuthGuard]
-  },
-  {
     path: 'admin',
     loadComponent: () => import('./admin/admin.page').then( m => m.AdminPage),
     canActivate: [AdminGuard]

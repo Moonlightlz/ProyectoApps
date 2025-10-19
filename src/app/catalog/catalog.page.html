@@ -1,10 +1,25 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>🛍️ Catálogo</ion-title>
-    <!-- Botón de vista grid/list -->
-    <ion-button fill="clear" slot="end" (click)="toggleViewMode()">
-      <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
-    </ion-button>
+    <ion-title>
+      🛍️ {{ showOnlyFavorites ? 'Mis Favoritos' : 'Catálogo' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <!-- Botón de filtro de favoritos -->
+      <ion-button 
+        fill="clear" 
+        (click)="toggleFavoritesFilter()"
+        [color]="showOnlyFavorites ? 'danger' : 'medium'">
+        <ion-icon [name]="showOnlyFavorites ? 'heart' : 'heart-outline'"></ion-icon>
+      </ion-button>
+      <!-- Botón de vista grid/list -->
+      <ion-button fill="clear" (click)="toggleViewMode()">
+        <ion-icon [name]="viewMode === 'grid' ? 'list' : 'grid'"></ion-icon>
+      </ion-button>
+      <!-- Botón para recargar productos -->
+      <ion-button fill="clear" (click)="ionViewWillEnter()">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -72,8 +87,9 @@
               <ion-button 
                 fill="clear" 
                 class="favorite-btn"
+                [color]="isFavorite(product.id) ? 'danger' : 'medium'"
                 (click)="toggleFavorite(product); $event.stopPropagation()">
-                <ion-icon name="heart-outline"></ion-icon>
+                <ion-icon [name]="isFavorite(product.id) ? 'heart' : 'heart-outline'"></ion-icon>
               </ion-button>
             </div>
             
@@ -85,10 +101,20 @@
               <ion-button 
                 expand="block" 
                 size="small" 
-                color="primary"
+                fill="outline"
+                color="medium"
+                (click)="viewProductDetails(product); $event.stopPropagation()">
+                <ion-icon name="eye" slot="start"></ion-icon>
+                Ver detalles
+              </ion-button>
+              
+              <ion-button 
+                expand="block" 
+                size="small" 
+                [color]="isInCart(product.id) ? 'success' : 'primary'"
                 (click)="addToCart(product); $event.stopPropagation()">
-                <ion-icon name="add" slot="start"></ion-icon>
-                Agregar
+                <ion-icon [name]="isInCart(product.id) ? 'checkmark' : 'add'" slot="start"></ion-icon>
+                {{ isInCart(product.id) ? 'En carrito (' + getCartQuantity(product.id) + ')' : 'Agregar' }}
               </ion-button>
             </ion-card-content>
           </ion-card>
@@ -126,15 +152,24 @@
                   <ion-button 
                     fill="clear" 
                     size="small"
+                    [color]="isFavorite(product.id) ? 'danger' : 'medium'"
                     (click)="toggleFavorite(product); $event.stopPropagation()">
-                    <ion-icon name="heart-outline"></ion-icon>
+                    <ion-icon [name]="isFavorite(product.id) ? 'heart' : 'heart-outline'"></ion-icon>
                   </ion-button>
                   <ion-button 
                     size="small" 
-                    color="primary"
+                    fill="outline"
+                    color="medium"
+                    (click)="viewProductDetails(product); $event.stopPropagation()">
+                    <ion-icon name="eye" slot="start"></ion-icon>
+                    Detalles
+                  </ion-button>
+                  <ion-button 
+                    size="small" 
+                    [color]="isInCart(product.id) ? 'success' : 'primary'"
                     (click)="addToCart(product); $event.stopPropagation()">
-                    <ion-icon name="add" slot="start"></ion-icon>
-                    Agregar
+                    <ion-icon [name]="isInCart(product.id) ? 'checkmark' : 'add'" slot="start"></ion-icon>
+                    {{ isInCart(product.id) ? 'En carrito' : 'Agregar' }}
                   </ion-button>
                 </div>
               </div>
@@ -149,14 +184,41 @@
   <div *ngIf="!isLoading && filteredProducts.length === 0" class="empty-state">
     <ion-card>
       <ion-card-content class="ion-text-center">
-        <ion-icon name="search" size="large" color="medium"></ion-icon>
+        <ion-icon name="storefront-outline" size="large" color="medium"></ion-icon>
         <h2>No se encontraron productos</h2>
+        
         <p *ngIf="searchTerm">
           No hay productos que coincidan con "{{ searchTerm }}"
         </p>
-        <p *ngIf="!searchTerm">
-          No hay productos disponibles en este momento
+        <p *ngIf="!searchTerm && showOnlyFavorites && products.length > 0">
+          No tienes productos favoritos aún.<br>
+          Agrega productos a favoritos desde el catálogo principal.
         </p>
+        <p *ngIf="!searchTerm && !showOnlyFavorites && products.length === 0">
+          No hay productos disponibles en este momento.<br>
+          Los productos creados en el panel de administración aparecerán aquí.
+        </p>
+        <p *ngIf="!searchTerm && !showOnlyFavorites && products.length > 0">
+          No hay productos en esta categoría.
+        </p>
+        
+        <ion-button 
+          fill="outline" 
+          color="primary" 
+          (click)="ionViewWillEnter()"
+          *ngIf="!searchTerm && products.length === 0">
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          Recargar productos
+        </ion-button>
+        
+        <ion-button 
+          fill="outline" 
+          color="primary" 
+          (click)="clearSearch()"
+          *ngIf="searchTerm">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Limpiar búsqueda
+        </ion-button>
       </ion-card-content>
     </ion-card>
   </div>

@@ -29,6 +29,7 @@ export class AdminPage implements OnInit, OnDestroy {
   
   // Formulario de producto
   showProductForm = false;
+  showDebugMode = false; // Control para mostrar/ocultar botones de debug
   editingProduct: Product | null = null;
   productForm = {
     name: '',
@@ -127,7 +128,7 @@ export class AdminPage implements OnInit, OnDestroy {
         if (!this.isAdmin) {
           console.log('AdminPage: Usuario de Firebase no es admin');
           await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
-          this.router.navigate(['/catalog']);
+          this.router.navigate(['/tabs/catalog']);
           return;
         }
         return;
@@ -148,12 +149,12 @@ export class AdminPage implements OnInit, OnDestroy {
       // Si llegamos aquí, no es admin
       console.log('AdminPage: Acceso denegado - no es administrador');
       await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/tabs/catalog']);
       
     } catch (error) {
       console.error('Error verificando acceso de admin:', error);
       await this.showToast('Error verificando permisos de administrador.', 'danger');
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/tabs/catalog']);
     }
   }
 
@@ -269,7 +270,11 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   async saveProduct() {
+    console.log('=== INICIANDO GUARDADO DE PRODUCTO ===');
+    console.log('Datos del formulario:', this.productForm);
+    
     if (!this.validateProductForm()) {
+      console.log('Validación del formulario falló');
       return;
     }
 
@@ -280,6 +285,7 @@ export class AdminPage implements OnInit, OnDestroy {
 
     try {
       const currentUser = await this.authService.getCurrentUser();
+      console.log('Usuario actual:', currentUser);
       if (!currentUser) {
         await this.showToast('Error: Usuario no autenticado', 'danger');
         return;
@@ -312,8 +318,16 @@ export class AdminPage implements OnInit, OnDestroy {
           nutritionalInfo: this.productForm.nutritionalInfo,
           imageUrl: this.productForm.imageUrl
         };
-        await this.productService.createProduct(createRequest, currentUser.uid);
-        await this.showToast('Producto creado correctamente', 'success');
+        console.log('Request de creación:', createRequest);
+        const productId = await this.productService.createProduct(createRequest, currentUser.uid);
+        console.log('ID del producto creado:', productId);
+        
+        if (productId) {
+          await this.showToast('Producto creado correctamente', 'success');
+        } else {
+          await this.showToast('Error al crear el producto', 'danger');
+          return;
+        }
       }
 
       this.closeProductForm();
@@ -440,7 +454,113 @@ export class AdminPage implements OnInit, OnDestroy {
     }
   }
 
-  // Gestión de ingredientes y alérgenos
+  // Método para alternar el modo debug
+  toggleDebugMode() {
+    this.showDebugMode = !this.showDebugMode;
+  }
+
+  // Método para verificar conexión con Firebase
+  async testFirebaseConnection() {
+    try {
+      console.log('=== PRUEBA COMPLETA DE FIREBASE ===');
+      
+      // 1. Probar conexión básica
+      console.log('1️⃣ Probando conexión básica...');
+      await (this.productService as any).testFirestoreConnection();
+      
+      // 2. Probar reglas de seguridad
+      console.log('2️⃣ Probando reglas de seguridad...');
+      await (this.productService as any).testFirestoreRules();
+      
+      // 3. Probar creación de categorías
+      console.log('3️⃣ Inicializando categorías...');
+      await this.productService.initializeDefaultCategories();
+      
+      // 4. Probar obtención de categorías
+      console.log('4️⃣ Obteniendo categorías...');
+      const categories = await this.productService.getCategories();
+      
+      await this.showToast(`✅ Firebase conectado. ${categories.length} categorías`, 'success');
+    } catch (error) {
+      console.error('❌ Error en prueba completa de Firebase:', error);
+      await this.showToast('❌ Error de conexión a Firebase', 'danger');
+    }
+  }
+
+  // Método para verificar qué productos están en la base de datos
+  async testDatabaseProducts() {
+    try {
+      console.log('=== VERIFICANDO PRODUCTOS EN BASE DE DATOS ===');
+      
+      // Obtener productos raw (sin filtros)
+      const rawProducts = await (this.productService as any).getAllProductsRaw();
+      console.log(`Total productos en BD: ${rawProducts.length}`);
+      
+      // Obtener productos disponibles (con filtros)
+      const availableProducts = await this.productService.getAvailableProducts();
+      console.log(`Productos disponibles: ${availableProducts.length}`);
+      
+      // Obtener todos los productos (método normal)
+      const allProducts = await this.productService.getAllProducts();
+      console.log(`Productos (método normal): ${allProducts.length}`);
+      
+      await this.showToast(
+        `BD: ${rawProducts.length} total, ${availableProducts.length} disponibles`, 
+        rawProducts.length > 0 ? 'success' : 'warning'
+      );
+      
+    } catch (error) {
+      console.error('Error verificando productos:', error);
+      await this.showToast('Error accediendo a la base de datos', 'danger');
+    }
+  }
+
+  // Método de prueba para crear producto básico
+  async testProductCreation() {
+    try {
+      console.log('=== PRUEBA DE CREACIÓN DE PRODUCTO ===');
+      
+      const currentUser = await this.authService.getCurrentUser();
+      if (!currentUser) {
+        await this.showToast('Usuario no autenticado', 'danger');
+        return;
+      }
+
+      // Primero, asegurar que tenemos categorías
+      const categories = await this.productService.getCategories();
+      console.log('Categorías disponibles para prueba:', categories);
+      
+      if (categories.length === 0) {
+        await this.showToast('No hay categorías disponibles', 'danger');
+        return;
+      }
+
+      const testProduct: CreateProductRequest = {
+        name: 'Producto de Prueba',
+        description: 'Este es un producto de prueba para verificar Firebase',
+        price: 10.50,
+        categoryId: categories[0].id, // Usar la primera categoría disponible
+        ingredients: ['Harina', 'Azúcar'],
+        allergens: ['Gluten'],
+        imageUrl: 'https://via.placeholder.com/300x200.png?text=Test'
+      };
+
+      console.log('Datos del producto de prueba:', testProduct);
+
+      const productId = await this.productService.createProduct(testProduct, currentUser.uid);
+      
+      if (productId) {
+        console.log('Producto de prueba creado con ID:', productId);
+        await this.showToast('Producto de prueba creado exitosamente', 'success');
+        await this.loadData(); // Recargar la lista
+      } else {
+        await this.showToast('Error al crear producto de prueba', 'danger');
+      }
+    } catch (error) {
+      console.error('Error en prueba de producto:', error);
+      await this.showToast(`Error en prueba: ${error}`, 'danger');
+    }
+  }
   toggleIngredient(ingredient: string) {
     const index = this.productForm.ingredients.indexOf(ingredient);
     if (index > -1) {
@@ -461,7 +581,13 @@ export class AdminPage implements OnInit, OnDestroy {
 
   // Navegación
   goBack() {
-    this.router.navigate(['/catalog']);
+    this.router.navigate(['/tabs/catalog']);
+  }
+
+  goToCatalog() {
+    console.log('Navegando al catálogo desde admin...');
+    this.showToast('Navegando al catálogo...', 'success');
+    this.router.navigate(['/tabs/catalog']);
   }
 
   // Utilidades

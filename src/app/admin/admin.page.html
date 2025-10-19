@@ -7,6 +7,10 @@
     </ion-buttons>
     <ion-title>Panel de Administración</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="goToCatalog()" fill="clear">
+        <ion-icon name="storefront-outline" slot="start"></ion-icon>
+        Ver Catálogo
+      </ion-button>
       <ion-button (click)="openProductForm()">
         <ion-icon name="add"></ion-icon>
       </ion-button>
@@ -25,7 +29,47 @@
         </h1>
         <p>{{products.length}} productos • {{categories.length}} categorías</p>
       </div>
+      <div style="display: flex; gap: 8px;">
+        <!-- Botón para ir al catálogo -->
+        <ion-button 
+          fill="outline" 
+          size="small" 
+          (click)="goToCatalog()"
+          color="light">
+          <ion-icon name="storefront-outline" slot="start"></ion-icon>
+          Ver Catálogo
+        </ion-button>
+        <!-- Botón para activar/desactivar modo debug -->
+        <ion-button 
+          fill="clear" 
+          size="small" 
+          (click)="toggleDebugMode()"
+          [color]="showDebugMode ? 'danger' : 'medium'">
+          <ion-icon [name]="showDebugMode ? 'bug' : 'bug-outline'" slot="start"></ion-icon>
+          {{showDebugMode ? 'Salir Debug' : 'Debug'}}
+        </ion-button>
+      </div>
     </div>
+  </div>
+
+  <!-- Botones de prueba temporales - solo visible en modo debug -->
+  <div *ngIf="showDebugMode" style="padding: 10px; background: #f0f0f0; margin: 10px; border-radius: 8px; border-left: 4px solid #ff6b6b;">
+    <h3>🧪 Modo Debug Activado</h3>
+    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+      Estos botones son para pruebas y debugging. Revisa la consola del navegador (F12) para ver los logs.
+    </p>
+    <ion-button fill="outline" (click)="testFirebaseConnection()" color="primary" size="small">
+      <ion-icon name="cloud-outline" slot="start"></ion-icon>
+      Probar Firebase
+    </ion-button>
+    <ion-button fill="outline" (click)="testDatabaseProducts()" color="tertiary" size="small">
+      <ion-icon name="server-outline" slot="start"></ion-icon>
+      Verificar BD
+    </ion-button>
+    <ion-button fill="outline" (click)="testProductCreation()" color="secondary" size="small">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Crear Producto Prueba
+    </ion-button>
   </div>
 
   <!-- Controles de búsqueda y filtrado -->
@@ -307,14 +351,14 @@
           </ion-item>
 
           <ion-item>
-            <ion-label position="stacked">Precio (COP) *</ion-label>
+            <ion-label position="stacked">Precio (SOLES) *</ion-label>
             <ion-input 
               type="number" 
               [(ngModel)]="productForm.price" 
               name="price"
               required
               min="0"
-              step="500">
+              step="0.50">
             </ion-input>
           </ion-item>
 

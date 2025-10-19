@@ -23,6 +23,12 @@
     <ion-tab-button tab="cart" href="/tabs/cart">
       <ion-icon aria-hidden="true" name="basket"></ion-icon>
       <ion-label>Carrito</ion-label>
+      <ion-badge 
+        *ngIf="cartItemsCount > 0" 
+        color="danger" 
+        class="cart-badge">
+        {{ cartItemsCount }}
+      </ion-badge>
     </ion-tab-button>
 
     <ion-tab-button tab="profile" href="/tabs/profile">

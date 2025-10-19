@@ -10,6 +10,10 @@ ion-content {
   box-shadow: 0 4px 20px rgba(111, 66, 193, 0.3);
   
   .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
     .header-info {
       h1 {
         margin: 0 0 8px 0;
@@ -30,6 +34,18 @@ ion-content {
         font-size: 16px;
         opacity: 0.9;
         font-weight: 500;
+      }
+    }
+    
+    // Botón de debug en el header
+    ion-button {
+      --color: rgba(255, 255, 255, 0.9);
+      --color-activated: rgba(255, 255, 255, 1);
+      font-size: 0.9em;
+      
+      &[color="danger"] {
+        --color: #ff6b6b;
+        --color-activated: #ff5252;
       }
     }
   }

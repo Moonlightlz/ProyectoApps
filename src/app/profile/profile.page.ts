@@ -32,6 +32,8 @@ import {
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user';
 import { PhotoService } from '../services/photo';
+import { FavoritesService } from '../services/favorites.service';
+import { CartService } from '../services/cart.service';
 import { User } from '../models/user.model';
 import { addIcons } from 'ionicons';
 import { 
@@ -48,7 +50,8 @@ import {
   timeOutline,
   starOutline,
   heartOutline,
-  bagOutline
+  bagOutline,
+  cartOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -88,6 +91,10 @@ export class ProfilePage implements OnInit {
   isLoading = true;
   isEditing = false;
   
+  // Estadísticas
+  favoritesCount = 0;
+  cartItemsCount = 0;
+  
   // Datos editables
   editData = {
     name: '',
@@ -108,7 +115,9 @@ export class ProfilePage implements OnInit {
     private loadingController: LoadingController,
     private authService: AuthService,
     private userService: UserService,
-    private photoService: PhotoService
+    private photoService: PhotoService,
+    private favoritesService: FavoritesService,
+    private cartService: CartService
   ) { 
     addIcons({
       logOut,
@@ -124,12 +133,14 @@ export class ProfilePage implements OnInit {
       timeOutline,
       starOutline,
       heartOutline,
-      bagOutline
+      bagOutline,
+      cartOutline
     });
   }
 
   async ngOnInit() {
     await this.loadUserProfile();
+    await this.loadUserStats();
   }
 
   async loadUserProfile() {
@@ -156,8 +167,29 @@ export class ProfilePage implements OnInit {
     }
   }
 
+  async loadUserStats() {
+    try {
+      // Cargar estadísticas de favoritos y carrito
+      this.favoritesCount = this.favoritesService.getFavoritesCount();
+      this.cartItemsCount = this.cartService.getItemCount();
+      
+      // Suscribirse a cambios en tiempo real
+      this.favoritesService.getFavorites$().subscribe(favorites => {
+        this.favoritesCount = favorites.length;
+      });
+      
+      this.cartService.getCart$().subscribe(cart => {
+        this.cartItemsCount = cart ? cart.totalItems : 0;
+      });
+      
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+    }
+  }
+
   async doRefresh(event: any) {
     await this.loadUserProfile();
+    await this.loadUserStats();
     event.target.complete();
   }
 
@@ -354,6 +386,13 @@ export class ProfilePage implements OnInit {
       ]
     });
     await alert.present();
+  }
+
+  async viewMyFavorites() {
+    // Navegar al catálogo con filtro de favoritos
+    this.router.navigate(['/tabs/catalog'], { 
+      queryParams: { showFavorites: 'true' } 
+    });
   }
 
   private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {

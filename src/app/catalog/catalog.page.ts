@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { 
   IonContent, 
   IonHeader, 
   IonTitle, 
   IonToolbar,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonButton,
@@ -26,11 +28,14 @@ import {
   IonFab,
   IonFabButton,
   ToastController,
-  LoadingController
+  LoadingController,
+  ModalController
 } from '@ionic/angular/standalone';
 import { ProductService } from '../services/product.service';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user';
+import { FavoritesService } from '../services/favorites.service';
+import { CartService } from '../services/cart.service';
 import { Product, ProductCategory } from '../models/product.model';
 import { UserRole } from '../models/user.model';
 import { addIcons } from 'ionicons';
@@ -43,7 +48,9 @@ import {
   settings,
   funnel,
   grid,
-  list
+  list,
+  eye,
+  checkmark
 } from 'ionicons/icons';
 
 @Component({
@@ -56,6 +63,7 @@ import {
     IonHeader, 
     IonTitle, 
     IonToolbar,
+    IonButtons,
     IonCard,
     IonCardContent,
     IonButton,
@@ -78,7 +86,7 @@ import {
     FormsModule
   ]
 })
-export class CatalogPage implements OnInit {
+export class CatalogPage implements OnInit, ViewWillEnter {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   categories: ProductCategory[] = [];
@@ -87,14 +95,19 @@ export class CatalogPage implements OnInit {
   selectedCategory = 'all';
   searchTerm = '';
   viewMode: 'grid' | 'list' = 'grid';
+  showOnlyFavorites = false;
 
   constructor(
     private productService: ProductService,
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
+    private activatedRoute: ActivatedRoute,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private modalController: ModalController,
+    private favoritesService: FavoritesService,
+    private cartService: CartService
   ) {
     addIcons({
       search,
@@ -105,13 +118,24 @@ export class CatalogPage implements OnInit {
       settings,
       funnel,
       grid,
-      list
+      list,
+      eye,
+      checkmark
     });
   }
 
   async ngOnInit() {
+    // Verificar si debemos mostrar solo favoritos
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.showOnlyFavorites = params['showFavorites'] === 'true';
+    });
+    
     await this.loadData();
     await this.checkAdminStatus();
+  }
+
+  async ionViewWillEnter() {
+    await this.loadData();
   }
 
   async loadData() {
@@ -129,8 +153,12 @@ export class CatalogPage implements OnInit {
       this.filteredProducts = products;
       
     } catch (error) {
-      console.error('Error cargando datos:', error);
-      await this.showToast('Error al cargar el catálogo', 'danger');
+      console.error('Error cargando datos del catálogo:', error);
+      await this.showToast('Error al cargar el catálogo. Verifique su conexión.', 'danger');
+      
+      this.categories = [];
+      this.products = [];
+      this.filteredProducts = [];
     } finally {
       this.isLoading = false;
     }
@@ -177,7 +205,6 @@ export class CatalogPage implements OnInit {
       // Si es un usuario demo (credenciales de prueba)
       const username = localStorage.getItem('username');
       this.isAdmin = username === 'admin';
-      console.log('CatalogPage: Admin por demo =', this.isAdmin, 'username =', username);
       
     } catch (error) {
       console.error('Error verificando status de admin:', error);
@@ -202,6 +229,13 @@ export class CatalogPage implements OnInit {
 
   filterProducts() {
     let filtered = this.products;
+
+    // Filtrar por favoritos si está activo
+    if (this.showOnlyFavorites) {
+      filtered = filtered.filter(product => 
+        this.favoritesService.isFavorite(product.id)
+      );
+    }
 
     // Filtrar por categoría
     if (this.selectedCategory !== 'all') {
@@ -229,28 +263,98 @@ export class CatalogPage implements OnInit {
     this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
   }
 
+  toggleFavoritesFilter() {
+    this.showOnlyFavorites = !this.showOnlyFavorites;
+    this.filterProducts();
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.selectedCategory = 'all';
+    this.filterProducts();
+  }
+
   async addToCart(product: Product) {
-    // TODO: Implementar lógica del carrito
-    await this.showToast(`${product.name} agregado al carrito`, 'success');
+    try {
+      
+      const success = await this.cartService.addToCart(product, 1);
+      
+      if (success) {
+        await this.showToast(`✅ ${product.name} agregado al carrito`, 'success');
+        
+        // Agregar pequeña vibración si está disponible
+        if ('vibrate' in navigator) {
+          navigator.vibrate(50);
+        }
+      } else {
+        await this.showToast(`❌ Error agregando ${product.name} al carrito`, 'danger');
+      }
+    } catch (error) {
+      console.error('Error agregando al carrito:', error);
+      await this.showToast('Error al agregar al carrito. Intente nuevamente.', 'danger');
+    }
   }
 
   async toggleFavorite(product: Product) {
-    // TODO: Implementar lógica de favoritos
-    await this.showToast(`${product.name} agregado a favoritos`, 'success');
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        await this.showToast('Debe iniciar sesión para agregar favoritos', 'warning');
+        return;
+      }
+
+      const isFavorite = await this.favoritesService.toggleFavorite(product);
+      
+      if (isFavorite) {
+        await this.showToast(`❤️ ${product.name} agregado a favoritos`, 'success');
+      } else {
+        await this.showToast(`💔 ${product.name} eliminado de favoritos`, 'success');
+      }
+      
+      if ('vibrate' in navigator) {
+        navigator.vibrate(30);
+      }
+    } catch (error) {
+      console.error('Error con favoritos:', error);
+      await this.showToast('Error al gestionar favoritos. Intente nuevamente.', 'danger');
+    }
   }
 
-  viewProductDetails(product: Product) {
-    // TODO: Navegar a página de detalles del producto
-    console.log('Ver detalles de:', product.name);
+  isFavorite(productId: string): boolean {
+    return this.favoritesService.isFavorite(productId);
+  }
+
+  isInCart(productId: string): boolean {
+    return this.cartService.isInCart(productId);
+  }
+
+  getCartQuantity(productId: string): number {
+    return this.cartService.getProductQuantityInCart(productId);
+  }
+
+  async viewProductDetails(product: Product) {
+    try {
+      const { ProductDetailsModalComponent } = await import('../components/product-details-modal.component');
+      
+      const modal = await this.modalController.create({
+        component: ProductDetailsModalComponent,
+        componentProps: {
+          product: product
+        },
+        breakpoints: [0, 0.3, 0.7, 1],
+        initialBreakpoint: 0.7
+      });
+
+      await modal.present();
+      await modal.onDidDismiss();
+      
+    } catch (error) {
+      console.error('Error abriendo modal de detalles:', error);
+      await this.showToast('Error al cargar los detalles del producto', 'danger');
+    }
   }
 
   goToAdminPanel() {
-    console.log('CatalogPage: Intentando navegar a admin panel...');
-    console.log('CatalogPage: isAdmin =', this.isAdmin);
-    console.log('CatalogPage: localStorage username =', localStorage.getItem('username'));
-    console.log('CatalogPage: localStorage isLoggedIn =', localStorage.getItem('isLoggedIn'));
-    console.log('CatalogPage: authService.isLoggedIn() =', this.authService.isLoggedIn());
-    
     this.router.navigate(['/admin']);
   }
 
