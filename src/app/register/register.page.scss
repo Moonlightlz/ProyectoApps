@@ -1,0 +1,182 @@
+.register-container {
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff8dc 0%, #ffb3d1 100%);
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 30px;
+  animation: fadeInUp 0.8s ease-out;
+  
+  h2 {
+    color: #2f1b14;
+    margin: 20px 0 10px 0;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+    font-size: 1.6rem;
+  }
+  
+  p {
+    color: #5d4037;
+    margin: 0;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+ion-card {
+  margin: 0;
+  box-shadow: var(--ion-box-shadow);
+  border-radius: 20px !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+ion-item {
+  margin-bottom: 15px;
+  --border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(255, 107, 157, 0.3);
+  --color: #2f1b14;
+  
+  &:hover {
+    --background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+  }
+}
+
+ion-input {
+  font-weight: 500;
+  --color: #2f1b14 !important;
+}
+
+// Sección de foto de perfil
+.profile-photo-section {
+  text-align: center;
+  margin-bottom: 25px;
+  
+  .photo-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    border: 3px solid #ff6b9d;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+      border-color: #ffbe0b;
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .photo-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #ff6b9d;
+      
+      p {
+        margin: 8px 0 0 0;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Términos y condiciones
+.terms-label {
+  font-size: 0.9rem;
+  margin-left: 10px;
+  
+  .link {
+    color: #ff6b9d;
+    text-decoration: underline;
+    cursor: pointer;
+    
+    &:hover {
+      color: #ffbe0b;
+    }
+  }
+}
+
+// Botones
+.register-button {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
+  height: 50px;
+  font-weight: 600;
+  
+  &:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+}
+
+ion-button[fill="clear"] {
+  margin: 5px 0;
+  font-weight: 500;
+  
+  &:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+  }
+}
+
+// Animaciones
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Efectos de fondo
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 80%, rgba(255, 107, 157, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 20%, rgba(255, 190, 11, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .register-container {
+    padding: 15px;
+  }
+  
+  .profile-photo-section .photo-container {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .header-section h2 {
+    font-size: 1.4rem;
+  }
+}

@@ -1,0 +1,319 @@
+// Profile Page Styles
+.profile-content {
+  padding: 8px;
+}
+
+// Profile Header Card
+.profile-header-card {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  color: white;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.avatar-container {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.camera-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  background: var(--ion-color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  ion-icon {
+    font-size: 14px;
+    color: white;
+  }
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: white;
+}
+
+.profile-email {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  ion-chip {
+    --background: rgba(255, 255, 255, 0.2);
+    --color: white;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Card Headers with Actions
+.card-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+
+    ion-icon {
+      font-size: 20px;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+// Form Styles
+.edit-actions {
+  margin-top: 16px;
+}
+
+ion-item {
+  --background: transparent;
+  --border-style: none;
+  --border-width: 0;
+  --inner-border-width: 0 0 1px 0;
+  --inner-border-style: solid;
+  --inner-border-color: var(--ion-color-light-shade);
+  margin-bottom: 8px;
+
+  ion-input, ion-textarea {
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}
+
+// Stats Card
+.stats-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px;
+
+  ion-card-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-icon {
+      color: white;
+    }
+  }
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+}
+
+.stat-icon {
+  margin-bottom: 8px;
+
+  ion-icon {
+    font-size: 28px;
+  }
+}
+
+.stat-info {
+  h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+  }
+
+  p {
+    font-size: 12px;
+    margin: 4px 0 0 0;
+    opacity: 0.9;
+    color: white;
+  }
+}
+
+// Action Buttons
+ion-button {
+  margin: 8px 0;
+  --border-radius: 12px;
+  font-weight: 500;
+
+  &[expand="block"] {
+    height: 48px;
+  }
+}
+
+// Quick Actions
+ion-card ion-button[fill="outline"] {
+  margin: 4px 0;
+  height: 44px;
+}
+
+// Logout Card
+.logout-card {
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+// Loading Skeleton
+.profile-skeleton {
+  padding: 8px;
+}
+
+.profile-header-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+
+  ion-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+}
+
+// Error State
+.error-state {
+  padding: 32px;
+  text-align: center;
+
+  ion-icon {
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    color: var(--ion-color-dark);
+    margin: 16px 0 8px 0;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0 0 16px 0;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-name {
+    font-size: 20px;
+  }
+}
+
+// Dark Theme Support
+@media (prefers-color-scheme: dark) {
+  ion-item {
+    --inner-border-color: var(--ion-color-dark-shade);
+  }
+}
+
+// Animation Classes
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Card Hover Effects
+ion-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Input Focus States
+ion-input, ion-textarea {
+  &.has-focus {
+    --border-color: var(--ion-color-primary);
+  }
+}
+
+// Badge Styles
+ion-chip {
+  font-size: 12px;
+  height: 28px;
+  
+  ion-icon {
+    font-size: 14px;
+  }
+}

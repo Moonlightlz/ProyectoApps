@@ -67,28 +67,28 @@ ion-input {
   --color: #2f1b14 !important;
 }
 
-// Estilos para la información de demo
-.demo-info {
+// Estilos para las opciones adicionales
+.additional-options {
   margin-top: 20px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 107, 157, 0.2);
+  border-top: 1px solid rgba(255, 107, 157, 0.2);
+  padding-top: 15px;
   
-  p {
+  ion-button {
     margin: 5px 0;
-    color: #2f1b14;
-    text-shadow: none;
-    font-size: 0.9rem;
-  }
-  
-  .credential {
-    background: #ff6b9d;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-family: monospace;
+    font-weight: 500;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 10;
+    position: relative;
+    
+    &:hover {
+      transform: translateY(-1px);
+      transition: transform 0.2s ease;
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 

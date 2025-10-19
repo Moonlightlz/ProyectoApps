@@ -1,0 +1,128 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>🧁 Crear Cuenta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="register-container">
+    <div class="header-section">
+      <h2>Únete a Pastelería D'Diego</h2>
+      <p>Crea tu cuenta para disfrutar de nuestros deliciosos productos</p>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        <!-- Foto de perfil -->
+        <div class="profile-photo-section">
+          <div class="photo-container" (click)="selectPhoto()">
+            <img *ngIf="selectedPhoto" [src]="selectedPhoto" alt="Foto de perfil" />
+            <div *ngIf="!selectedPhoto" class="photo-placeholder">
+              <ion-icon name="camera" size="large"></ion-icon>
+              <p>Toca para agregar foto</p>
+            </div>
+          </div>
+          <ion-button 
+            fill="clear" 
+            size="small" 
+            color="medium"
+            (click)="selectPhoto()">
+            <ion-icon name="camera" slot="start"></ion-icon>
+            {{ selectedPhoto ? 'Cambiar foto' : 'Agregar foto' }}
+          </ion-button>
+        </div>
+
+        <!-- Información personal -->
+        <ion-item>
+          <ion-input 
+            label="Nombre completo" 
+            labelPlacement="floating" 
+            type="text"
+            placeholder="Ingresa tu nombre completo"
+            [(ngModel)]="registerForm.name"
+            required>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input 
+            label="Correo electrónico" 
+            labelPlacement="floating" 
+            type="email"
+            placeholder="tu@email.com"
+            [(ngModel)]="registerForm.email"
+            required>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input 
+            label="Teléfono" 
+            labelPlacement="floating" 
+            type="tel"
+            placeholder="123-456-7890"
+            [(ngModel)]="registerForm.phone">
+          </ion-input>
+        </ion-item>
+
+        <!-- Contraseñas -->
+        <ion-item>
+          <ion-input 
+            label="Contraseña" 
+            labelPlacement="floating" 
+            type="password"
+            placeholder="••••••••"
+            [(ngModel)]="registerForm.password"
+            required>
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input 
+            label="Confirmar contraseña" 
+            labelPlacement="floating" 
+            type="password"
+            placeholder="••••••••"
+            [(ngModel)]="registerForm.confirmPassword"
+            required>
+          </ion-input>
+        </ion-item>
+
+        <!-- Términos y condiciones -->
+        <ion-item lines="none">
+          <ion-checkbox 
+            slot="start"
+            [(ngModel)]="registerForm.acceptTerms">
+          </ion-checkbox>
+          <ion-label class="terms-label">
+            Acepto los <span class="link" (click)="showTerms()">términos y condiciones</span>
+          </ion-label>
+        </ion-item>
+
+        <!-- Botones -->
+        <ion-button 
+          expand="block" 
+          class="register-button" 
+          color="primary"
+          (click)="register()"
+          [disabled]="!isFormValid()">
+          <ion-icon name="person-add" slot="start"></ion-icon>
+          Crear Cuenta
+        </ion-button>
+
+        <ion-button 
+          fill="clear" 
+          expand="block" 
+          color="medium"
+          (click)="goToLogin()">
+          <ion-icon name="log-in" slot="start"></ion-icon>
+          ¿Ya tienes cuenta? Inicia sesión
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

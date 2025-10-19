@@ -46,19 +46,29 @@
           Iniciar Sesión
         </ion-button>
 
-        <ion-button 
-          fill="clear" 
-          expand="block" 
-          color="medium"
-          (click)="showDemoCredentials()">
-          <ion-icon name="key" slot="start"></ion-icon>
-          Usar credenciales de demo
-        </ion-button>
+        <!-- Opciones adicionales -->
+        <div class="additional-options">
+          <ion-button 
+            fill="clear" 
+            expand="block" 
+            color="medium"
+            (click)="goToRegister()"
+            type="button">
+            <ion-icon name="person-add" slot="start"></ion-icon>
+            Crear nueva cuenta
+          </ion-button>
 
-        <div class="demo-info">
-          <p><strong>Credenciales de prueba:</strong></p>
-          <p>Usuario: <span class="credential">admin</span></p>
-          <p>Contraseña: <span class="credential">admin</span></p>
+          <ion-button 
+            fill="clear" 
+            expand="block" 
+            color="medium"
+            (click)="goToForgotPassword()"
+            type="button">
+            <ion-icon name="help-circle" slot="start"></ion-icon>
+            ¿Olvidaste tu contraseña?
+          </ion-button>
+
+
         </div>
       </ion-card-content>
     </ion-card>
