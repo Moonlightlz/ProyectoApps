@@ -31,6 +31,20 @@ La aplicación estará disponible en http://localhost:8100
 - **Offline**: Funciona sin conexión a internet
 - **Responsive**: Adaptable a diferentes tamaños de pantalla
 
+## 🧭 Navegación de la App
+
+La aplicación está organizada en **6 pestañas principales**:
+
+1. **🏠 Inicio** - Pantalla principal con información de la pastelería
+2. **🧁 Menú/Tienda** - Catálogo de productos disponibles
+3. **📋 Pedidos** - Historial y seguimiento de órdenes
+4. **💬 Chat** - Comunicación directa con atención al cliente
+5. **🛒 Carrito** - Productos seleccionados para compra
+6. **👤 Perfil** - Información personal y configuraciones
+
+### Páginas adicionales:
+- **🔐 Login** - Autenticación de usuarios y administradores
+
 ## 🛠️ Tecnologías
 
 - **Frontend**: Ionic 7 + Angular 20
@@ -50,13 +64,21 @@ Para una configuración detallada del entorno de desarrollo, consulta:
 ```
 ProyectoApps/
 ├── src/
-│   ├── app/                 # Componentes y páginas Angular
-│   ├── services/            # Servicios Firebase
-│   ├── theme/              # Estilos CSS personalizados
-│   └── environments/       # Configuración de entornos
-├── android/                # Proyecto Android nativo
-├── ios/                    # Proyecto iOS nativo
-└── www/                    # Build de producción
+│   ├── app/
+│   │   ├── tabs/           # Sistema de navegación por pestañas
+│   │   ├── tab1/          # Página de Inicio (Home)
+│   │   ├── catalog/       # Menú y Tienda
+│   │   ├── orders/        # Historial de Pedidos
+│   │   ├── chat/          # Chat con atención al cliente
+│   │   ├── cart/          # Carrito de compras
+│   │   ├── profile/       # Perfil de usuario
+│   │   └── login/         # Autenticación de usuarios
+│   ├── services/          # Servicios Firebase (auth, firestore)
+│   ├── theme/             # Estilos CSS personalizados
+│   └── environments/      # Configuración de entornos
+├── android/               # Proyecto Android nativo
+├── ios/                   # Proyecto iOS nativo
+└── www/                   # Build de producción
 ```
 
 ## 🚀 Comandos de Desarrollo
@@ -134,10 +156,13 @@ La aplicación incluye acceso a:
 - ✅ Configuración base de Ionic + Angular
 - ✅ Integración con Firebase (Auth, Firestore, Storage)
 - ✅ Configuración para Android e iOS
-- ⏳ Desarrollo de pantallas principales
-- ⏳ Sistema de autenticación de usuarios
-- ⏳ Catálogo de productos
-- ⏳ Sistema de pedidos
+- ✅ Estructura de navegación por pestañas (6 secciones principales)
+- ✅ Páginas base creadas: Inicio, Menú, Pedidos, Chat, Carrito, Perfil
+- ✅ Página de login con diseño base
+- ⏳ Sistema de autenticación funcional
+- ⏳ Catálogo de productos con Firebase
+- ⏳ Sistema de pedidos y carrito
+- ⏳ Chat funcional con soporte para fotos
 
 ## 🔗 Enlaces Útiles
 

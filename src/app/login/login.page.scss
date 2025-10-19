@@ -1,0 +1,108 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff8dc 0%, #ffb3d1 100%);
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.8s ease-out;
+  
+  h1 {
+    font-size: 4rem;
+    margin: 0;
+    animation: gentlePulse 3s ease-in-out infinite;
+  }
+  
+  h2 {
+    color: #2f1b14;
+    margin: 10px 0;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+    font-size: 1.8rem;
+  }
+  
+  p {
+    color: #5d4037;
+    margin: 0;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.login-button {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
+}
+
+ion-card {
+  margin: 0;
+  box-shadow: var(--ion-box-shadow);
+  border-radius: 20px !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+ion-item {
+  margin-bottom: 15px;
+  --border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(255, 107, 157, 0.3);
+  --color: #2f1b14;
+  
+  &:hover {
+    --background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+  }
+}
+
+ion-input {
+  font-weight: 500;
+  --color: #2f1b14 !important;
+}
+
+// Estilos para la información de demo
+.demo-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 157, 0.2);
+  
+  p {
+    margin: 5px 0;
+    color: #2f1b14;
+    text-shadow: none;
+    font-size: 0.9rem;
+  }
+  
+  .credential {
+    background: #ff6b9d;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-family: monospace;
+  }
+}
+
+// Efecto especial en el fondo
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 107, 157, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 190, 11, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(142, 202, 230, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}

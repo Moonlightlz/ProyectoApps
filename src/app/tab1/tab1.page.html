@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      🔥 Firebase Test
+      🏠 Pastelería D'Diego
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -9,66 +9,99 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Firebase Test</ion-title>
+      <ion-title size="large">Inicio</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <!-- Estado de la conexión -->
-  <ion-card>
+  <!-- Partículas flotantes decorativas -->
+  <div class="floating-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Bienvenida -->
+  <ion-card class="clickable">
     <ion-card-header>
-      <ion-card-title>Estado de Firebase</ion-card-title>
+      <ion-card-title>¡Bienvenido a Pastelería D'Diego!</ion-card-title>
+      <ion-card-subtitle>Los mejores sabores de la ciudad</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      <p>{{ connectionStatus }}</p>
+      <p>Descubre nuestros deliciosos pasteles, tortas y postres artesanales, hechos con los mejores ingredientes y mucho amor.</p>
     </ion-card-content>
   </ion-card>
 
-  <!-- Agregar nuevo item -->
-  <ion-card>
+  <!-- Especialidades -->
+  <ion-card class="clickable">
     <ion-card-header>
-      <ion-card-title>Agregar Item</ion-card-title>
+      <ion-card-title>🧁 Nuestras Especialidades</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-item>
-        <ion-input 
-          [(ngModel)]="newItemName" 
-          placeholder="Nombre del item"
-          clearInput="true">
-        </ion-input>
-      </ion-item>
-      <ion-button 
-        expand="block" 
-        (click)="addItem()" 
-        [disabled]="!newItemName.trim()">
-        Agregar a Firebase
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Lista de items -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Items en Firebase ({{ items.length }})</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list *ngIf="items.length > 0; else noItems">
-        <ion-item *ngFor="let item of items">
+      <ion-list>
+        <ion-item class="clickable">
           <ion-label>
-            <h2>{{ item.name }}</h2>
-            <p>{{ item.createdAt?.toDate() | date:'short' }}</p>
+            <h2>🎂 Tortas Personalizadas</h2>
+            <p>Para ocasiones especiales</p>
           </ion-label>
-          <ion-button 
-            fill="clear" 
-            color="danger" 
-            (click)="deleteItem(item.id)">
-            🗑️
-          </ion-button>
+        </ion-item>
+        <ion-item class="clickable">
+          <ion-label>
+            <h2>🧁 Cupcakes Gourmet</h2>
+            <p>Variedad de sabores únicos</p>
+          </ion-label>
+        </ion-item>
+        <ion-item class="clickable">
+          <ion-label>
+            <h2>🍰 Postres Tradicionales</h2>
+            <p>Recetas familiares</p>
+          </ion-label>
         </ion-item>
       </ion-list>
-      
-      <ng-template #noItems>
-        <p>No hay items aún. ¡Agrega el primero!</p>
-      </ng-template>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Accesos rápidos -->
+  <ion-card class="clickable">
+    <ion-card-header>
+      <ion-card-title>🚀 Accesos Rápidos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-button expand="block" routerLink="/tabs/catalog" fill="outline" color="primary">
+              <ion-icon name="restaurant" slot="start"></ion-icon>
+              Ver Menú
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button expand="block" routerLink="/tabs/cart" fill="outline" color="secondary">
+              <ion-icon name="basket" slot="start"></ion-icon>
+              Mi Carrito
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="6">
+            <ion-button expand="block" routerLink="/tabs/orders" fill="outline" color="tertiary">
+              <ion-icon name="receipt" slot="start"></ion-icon>
+              Mis Pedidos
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button expand="block" routerLink="/tabs/chat" fill="outline" color="success">
+              <ion-icon name="chatbubbles" slot="start"></ion-icon>
+              Chat
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-card-content>
   </ion-card>
 

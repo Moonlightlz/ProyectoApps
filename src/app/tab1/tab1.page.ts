@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { 
   IonHeader, 
   IonToolbar, 
@@ -8,16 +8,19 @@ import {
   IonCard, 
   IonCardHeader, 
   IonCardTitle, 
+  IonCardSubtitle,
   IonCardContent,
   IonList,
   IonItem,
   IonLabel,
-  IonInput
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonIcon
 } from '@ionic/angular/standalone';
 
-import { FirestoreService } from '../services/firestore.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-tab1',
@@ -25,56 +28,11 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['tab1.page.scss'],
   imports: [
     IonHeader, IonToolbar, IonTitle, IonContent, IonButton, 
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonList, IonItem, IonLabel, IonInput,
-    CommonModule, FormsModule
+    IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
+    IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonIcon,
+    CommonModule, RouterModule
   ],
 })
-export class Tab1Page implements OnInit {
-  items: any[] = [];
-  newItemName: string = '';
-  connectionStatus: string = 'Conectando...';
-
-  constructor(private firestoreService: FirestoreService) {}
-
-  async ngOnInit() {
-    await this.loadItems();
-  }
-
-  async loadItems() {
-    try {
-      const result = await this.firestoreService.readAll('test-items');
-      if (result.success) {
-        this.items = result.data || [];
-        this.connectionStatus = '✅ Conectado a Firebase';
-      } else {
-        this.connectionStatus = '❌ Error: ' + result.error;
-      }
-    } catch (error) {
-      this.connectionStatus = '❌ Error de conexión: ' + error;
-    }
-  }
-
-  async addItem() {
-    if (this.newItemName.trim()) {
-      const result = await this.firestoreService.create('test-items', {
-        name: this.newItemName,
-        timestamp: new Date()
-      });
-      
-      if (result.success) {
-        this.newItemName = '';
-        await this.loadItems();
-      } else {
-        console.error('Error adding item:', result.error);
-      }
-    }
-  }
-
-  async deleteItem(id: string) {
-    const result = await this.firestoreService.delete('test-items', id);
-    if (result.success) {
-      await this.loadItems();
-    }
-  }
+export class Tab1Page {
+  constructor() {}
 }

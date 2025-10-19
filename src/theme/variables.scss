@@ -1,2 +1,109 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+// Tema Pastelería D'Diego - Colores cálidos y pasteles
+// Inspirado en colores de repostería y dulces
+
+/** Ionic CSS Variables **/
+:root {
+  // Colores principales de la pastelería
+  --ion-color-primary: #ff6b9d;         // Rosa pastel (como betún de fresa)
+  --ion-color-primary-rgb: 255,107,157;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  --ion-color-primary-shade: #e05e8a;
+  --ion-color-primary-tint: #ff7aa7;
+
+  --ion-color-secondary: #ffbe0b;       // Amarillo dorado (como miel)
+  --ion-color-secondary-rgb: 255,190,11;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0,0,0;
+  --ion-color-secondary-shade: #e0a70a;
+  --ion-color-secondary-tint: #ffc524;
+
+  --ion-color-tertiary: #8ecae6;        // Azul pastel (como glaseado)
+  --ion-color-tertiary-rgb: 142,202,230;
+  --ion-color-tertiary-contrast: #000000;
+  --ion-color-tertiary-contrast-rgb: 0,0,0;
+  --ion-color-tertiary-shade: #7db2ca;
+  --ion-color-tertiary-tint: #9acfe9;
+
+  --ion-color-success: #2dd36f;         // Verde menta
+  --ion-color-success-rgb: 45,211,111;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255,255,255;
+  --ion-color-success-shade: #28ba62;
+  --ion-color-success-tint: #42d77d;
+
+  --ion-color-warning: #ffc947;         // Naranja crema
+  --ion-color-warning-rgb: 255,201,71;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0,0,0;
+  --ion-color-warning-shade: #e0b13e;
+  --ion-color-warning-tint: #ffd359;
+
+  --ion-color-danger: #eb445a;          // Rojo cereza
+  --ion-color-danger-rgb: 235,68,90;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255,255,255;
+  --ion-color-danger-shade: #cf3c4f;
+  --ion-color-danger-tint: #ed576b;
+
+  --ion-color-dark: #2f1b14;            // Marrón chocolate oscuro
+  --ion-color-dark-rgb: 47,27,20;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255,255,255;
+  --ion-color-dark-shade: #29180f;
+  --ion-color-dark-tint: #44312c;
+
+  --ion-color-medium: #5d4037;          // Marrón más oscuro para mejor contraste
+  --ion-color-medium-rgb: 93,64,55;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255,255,255;
+  --ion-color-medium-shade: #52372f;
+  --ion-color-medium-tint: #6d4c41;
+
+  --ion-color-light: #fbf2ef;           // Crema vainilla
+  --ion-color-light-rgb: 251,242,239;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0,0,0;
+  --ion-color-light-shade: #ddd4d2;
+  --ion-color-light-tint: #fbf3f1;
+
+  // Colores personalizados de pastelería
+  --pastry-pink: #ffb3d1;              // Rosa suave
+  --pastry-cream: #fff8dc;             // Crema
+  --pastry-caramel: #d2691e;           // Caramelo
+  --pastry-mint: #98fb98;              // Verde menta
+  --pastry-lavender: #e6e6fa;          // Lavanda
+  --pastry-peach: #ffcba4;             // Durazno
+
+  // Fondo principal más cálido
+  --ion-background-color: #fef9f6;      // Fondo crema muy suave
+  --ion-background-color-rgb: 254,249,246;
+
+  // Colores de texto con mejor contraste
+  --ion-text-color: #1a0f0a;
+  --ion-text-color-rgb: 26,15,10;
+
+  // Sombras más suaves y cálidas
+  --ion-box-shadow: 0 4px 16px rgba(255, 107, 157, 0.15);
+  --ion-box-shadow-hover: 0 8px 24px rgba(255, 107, 157, 0.25);
+}
+
+// Tema oscuro para la pastelería (colores nocturnos cálidos)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #ff8fb3;
+    --ion-color-primary-rgb: 255,143,179;
+    --ion-color-primary-contrast: #000000;
+    --ion-color-primary-contrast-rgb: 0,0,0;
+    --ion-color-primary-shade: #e07e9e;
+    --ion-color-primary-tint: #ff9bbb;
+
+    --ion-background-color: #1a0f0a;      // Chocolate muy oscuro
+    --ion-background-color-rgb: 26,15,10;
+
+    --ion-text-color: #f4e4d6;           // Crema clara
+    --ion-text-color-rgb: 244,228,214;
+
+    --ion-card-background: #2d1610;       // Marrón oscuro para cards
+  }
+}

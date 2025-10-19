@@ -1,0 +1,296 @@
+/* Animaciones y estilos globales para Pastelería D'Diego */
+
+/* ===== ANIMACIONES GLOBALES ===== */
+
+/* Animación de entrada suave para cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de pulsación suave para botones */
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Animación de rotación suave para iconos */
+@keyframes softRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animación de shake suave para notificaciones */
+@keyframes softShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* ===== ESTILOS GLOBALES ===== */
+
+/* Transiciones suaves para todos los elementos */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilo mejorado para cards */
+ion-card {
+  border-radius: 16px !important;
+  box-shadow: var(--ion-box-shadow) !important;
+  animation: fadeInUp 0.6s ease-out;
+  border: 1px solid rgba(255, 107, 157, 0.2);
+  background: linear-gradient(135deg, #ffffff 0%, #fef9f6 100%);
+  color: var(--ion-text-color) !important;
+}
+
+ion-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ion-box-shadow-hover) !important;
+}
+
+/* Estilo mejorado para botones */
+ion-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+ion-button:not([fill="clear"]):hover {
+  animation: gentlePulse 0.6s ease-in-out;
+}
+
+/* Botones primarios con gradiente */
+ion-button[color="primary"] {
+  --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
+}
+
+/* Botones con efecto de ondas */
+ion-button::part(native) {
+  overflow: hidden;
+  position: relative;
+}
+
+ion-button::part(native)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+ion-button:active::part(native)::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Estilo mejorado para headers */
+ion-header {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+}
+
+ion-header ion-toolbar {
+  --background: transparent;
+  --color: white;
+}
+
+ion-title {
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: white !important;
+}
+
+/* Estilo mejorado para tabs */
+ion-tab-bar {
+  border-top: 1px solid rgba(255, 107, 157, 0.2);
+  background: linear-gradient(135deg, #ffffff 0%, var(--ion-color-light) 100%);
+  backdrop-filter: blur(10px);
+}
+
+ion-tab-button {
+  --color: #2f1b14;
+  --color-selected: var(--ion-color-primary);
+  transition: all 0.3s ease;
+  font-weight: 700;
+  
+  ion-label {
+    color: inherit !important;
+    font-weight: inherit !important;
+  }
+}
+
+ion-tab-button:hover {
+  transform: translateY(-2px);
+}
+
+ion-tab-button.tab-selected {
+  animation: gentlePulse 0.8s ease-in-out;
+}
+
+/* Iconos con animación */
+ion-icon {
+  transition: all 0.3s ease;
+}
+
+ion-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Animación especial para iconos de comida */
+ion-icon[name*="restaurant"],
+ion-icon[name*="cafe"] {
+  animation: softRotate 8s linear infinite;
+}
+
+/* Estilo mejorado para inputs */
+ion-input {
+  --border-radius: 12px;
+  --padding: 16px;
+}
+
+ion-item {
+  --border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(255, 107, 157, 0.2);
+  margin-bottom: 8px;
+}
+
+ion-item:hover {
+  --background: rgba(255, 255, 255, 0.9);
+  transform: translateX(4px);
+}
+
+/* Lista con animaciones escalonadas */
+ion-list ion-item {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+ion-list ion-item:nth-child(1) { animation-delay: 0.1s; }
+ion-list ion-item:nth-child(2) { animation-delay: 0.2s; }
+ion-list ion-item:nth-child(3) { animation-delay: 0.3s; }
+ion-list ion-item:nth-child(4) { animation-delay: 0.4s; }
+ion-list ion-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Grid con animación */
+ion-grid ion-col {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+ion-grid ion-col:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+/* Estilo para contenido principal */
+ion-content {
+  --background: linear-gradient(180deg, #fef9f6 0%, #fff8f3 100%);
+  --color: #1a0f0a !important;
+}
+
+/* Mejorar contraste en textos */
+ion-label, ion-card-title, ion-card-subtitle, ion-item, p, h1, h2, h3, h4, h5, h6 {
+  color: #1a0f0a !important;
+  font-weight: 500;
+}
+
+ion-card-title {
+  font-weight: 700 !important;
+}
+
+ion-card-subtitle {
+  color: #5d4037 !important;
+  font-weight: 600 !important;
+}
+
+/* Loading con animación personalizada */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 107, 157, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--ion-color-primary);
+  animation: softRotate 1s linear infinite;
+}
+
+/* Efecto hover para elementos clicables */
+.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clickable:hover {
+  transform: scale(1.02);
+  filter: brightness(1.05);
+}
+
+.clickable:active {
+  transform: scale(0.98);
+}
+
+/* Estilo para badges/chips */
+ion-chip {
+  --background: linear-gradient(135deg, var(--pastry-pink) 0%, var(--pastry-peach) 100%);
+  --color: var(--ion-color-dark);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Animación de entrada para modals */
+ion-modal {
+  --backdrop-opacity: 0.6;
+}
+
+ion-modal ion-content {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Estilo para alertas/toasts */
+ion-toast {
+  --border-radius: 12px;
+  --box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3);
+}
+
+/* Responsive - animaciones más suaves en dispositivos móviles */
+@media (max-width: 768px) {
+  * {
+    transition-duration: 0.2s;
+  }
+  
+  ion-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .clickable:hover {
+    transform: scale(1.01);
+  }
+}
+
+/* Accesibilidad - respeta las preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

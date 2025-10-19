@@ -1,0 +1,202 @@
+/* Fondos especiales para Pastelería D'Diego */
+
+/* Fondo principal de la app con gradiente suave */
+ion-app {
+  background: linear-gradient(135deg, 
+    var(--pastry-cream) 0%, 
+    var(--ion-color-light) 25%, 
+    var(--pastry-pink) 50%, 
+    var(--pastry-peach) 75%, 
+    var(--pastry-lavender) 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Animación de gradiente que cambia suavemente */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Contenido con efecto glass morphism */
+ion-content {
+  --background: rgba(254, 249, 246, 0.85);
+  backdrop-filter: blur(20px);
+}
+
+/* Efecto especial para headers con gradiente dinámico */
+ion-header {
+  position: relative;
+  overflow: hidden;
+}
+
+ion-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Patrón de fondo sutil para las cards */
+ion-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(255, 107, 157, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Efecto de partículas flotantes */
+.floating-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--ion-color-primary);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 8s infinite ease-in-out;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 1.5s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 2.5s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 3.5s; }
+.particle:nth-child(9) { left: 90%; animation-delay: 0.5s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(50vh) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+/* Efecto especial para botones de navegación en tabs */
+ion-tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: var(--ion-color-primary);
+  border-radius: 3px 3px 0 0;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+ion-tab-button.tab-selected::after {
+  width: 60%;
+}
+
+/* Efecto de loading personalizado */
+.pastry-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.pastry-loading::before {
+  content: '🧁';
+  font-size: 2rem;
+  animation: bounce 1.5s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Efecto hover mejorado para elementos interactivos */
+.interactive-element {
+  position: relative;
+  overflow: hidden;
+}
+
+.interactive-element::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 107, 157, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.interactive-element:hover::before {
+  width: 200%;
+  height: 200%;
+}
+
+/* Modo oscuro con colores cálidos */
+@media (prefers-color-scheme: dark) {
+  ion-app {
+    background: linear-gradient(135deg, 
+      #1a0f0a 0%, 
+      #2d1610 25%, 
+      #3d1f15 50%, 
+      #2d1610 75%, 
+      #1a0f0a 100%);
+  }
+  
+  .particle {
+    background: var(--pastry-pink);
+  }
+}

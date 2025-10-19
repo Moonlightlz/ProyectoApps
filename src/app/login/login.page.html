@@ -1,0 +1,66 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>🔐 Iniciar Sesión</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+    <div class="logo-section">
+      <h1>🧁</h1>
+      <h2>Pastelería D'Diego</h2>
+      <p>Bienvenido a nuestra aplicación</p>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-input 
+            label="Usuario" 
+            labelPlacement="floating" 
+            type="text"
+            placeholder="Ingresa tu usuario"
+            [(ngModel)]="username"
+            clear-input="true">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input 
+            label="Contraseña" 
+            labelPlacement="floating" 
+            type="password"
+            placeholder="••••••••"
+            [(ngModel)]="password"
+            clear-input="true">
+          </ion-input>
+        </ion-item>
+
+        <ion-button 
+          expand="block" 
+          class="login-button" 
+          color="primary"
+          (click)="login()"
+          [disabled]="!username.trim() || !password.trim()">
+          <ion-icon name="log-in" slot="start"></ion-icon>
+          Iniciar Sesión
+        </ion-button>
+
+        <ion-button 
+          fill="clear" 
+          expand="block" 
+          color="medium"
+          (click)="showDemoCredentials()">
+          <ion-icon name="key" slot="start"></ion-icon>
+          Usar credenciales de demo
+        </ion-button>
+
+        <div class="demo-info">
+          <p><strong>Credenciales de prueba:</strong></p>
+          <p>Usuario: <span class="credential">admin</span></p>
+          <p>Contraseña: <span class="credential">admin</span></p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

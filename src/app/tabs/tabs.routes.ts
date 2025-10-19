@@ -3,34 +3,44 @@ import { TabsPage } from './tabs.page';
 
 export const routes: Routes = [
   {
-    path: 'tabs',
+    path: '',
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'home',
         loadComponent: () =>
           import('../tab1/tab1.page').then((m) => m.Tab1Page),
       },
       {
-        path: 'tab2',
+        path: 'catalog',
         loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+          import('../catalog/catalog.page').then((m) => m.CatalogPage),
       },
       {
-        path: 'tab3',
+        path: 'orders',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../orders/orders.page').then((m) => m.OrdersPage),
+      },
+      {
+        path: 'chat',
+        loadComponent: () =>
+          import('../chat/chat.page').then((m) => m.ChatPage),
+      },
+      {
+        path: 'cart',
+        loadComponent: () =>
+          import('../cart/cart.page').then((m) => m.CartPage),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('../profile/profile.page').then((m) => m.ProfilePage),
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: 'home',
         pathMatch: 'full',
       },
     ],
-  },
-  {
-    path: '',
-    redirectTo: '/tabs/tab1',
-    pathMatch: 'full',
   },
 ];
