@@ -1,5 +1,16 @@
 {
-    "recommendations": [
-       "Webnative.webnative"
-    ]
+  "recommendations": [
+    "angular.ng-template",
+    "ionic.ionic",
+    "firebase.firebase-explorer",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-json",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "Webnative.webnative"
+  ],
+  "unwantedRecommendations": []
 }

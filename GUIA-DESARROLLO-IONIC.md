@@ -1,59 +1,67 @@
-# 📱 Guía de Desarrollo Ionic - Proyecto Híbrido
+# Documentación del Proyecto - Pastelería D'Diego
 
-## 🎯 Resumen del Proyecto
+## Descripción del proyecto
 
-Tu aplicación Ionic está **100% lista** para desarrollo híbrido:
+Esta es una aplicación móvil híbrida desarrollada con Ionic y Angular. La aplicación funciona tanto en navegadores web como en Android e iOS, utilizando el mismo código base.
 
-- ✅ **Web**: Funciona en navegador
-- ✅ **Android**: Proyecto nativo configurado
-- ✅ **iOS**: Proyecto nativo configurado
-- ✅ **Capacitor**: Plugins nativos instalados
+El proyecto está configurado con:
+- Ionic Framework para la interfaz de usuario
+- Capacitor para acceso a funciones nativas del dispositivo
+- Firebase como backend (base de datos, autenticación, etc.)
 
-## 🚀 Comandos de Desarrollo
+## Comandos de desarrollo
 
-### Para iniciar desarrollo web:
+### Para trabajar en el navegador
 ```bash
 ionic serve
 ```
-Esto abrirá tu app en `http://localhost:8100`
+Esto inicia un servidor local en http://localhost:8100 y se actualiza automáticamente cuando se modifican archivos.
 
-### Para desarrollo Android:
+### Para probar en Android
 ```bash
 ionic capacitor run android
 ```
+Requiere tener Android Studio instalado.
 
-### Para desarrollo iOS (solo en Mac):
+### Para probar en iOS (solo en Mac)
 ```bash
 ionic capacitor run ios
 ```
+Requiere Xcode instalado.
 
-## 📂 Estructura del Proyecto
+## Estructura del código
 
 ```
-ProyectoApps/                  # ← Tu aplicación Ionic
-├── src/                       # ← Código fuente de la app
-│   ├── app/                   # ← Componentes Angular
-│   ├── theme/                 # ← Estilos CSS
-│   └── assets/                # ← Imágenes, archivos
-├── android/                   # ← Proyecto Android nativo
-├── ios/                       # ← Proyecto iOS nativo
-├── www/                       # ← App compilada
-└── .git/                      # ← Control de versiones
+ProyectoApps/
+├── src/                    # Código fuente de la aplicación
+│   ├── app/               # Componentes y páginas
+│   ├── theme/             # Estilos CSS
+│   └── assets/            # Imágenes, iconos, etc.
+├── android/               # Proyecto Android (generado automáticamente)
+├── ios/                   # Proyecto iOS (generado automáticamente)
+└── www/                   # Aplicación compilada (generada al hacer build)
 ```
 
-## 🔄 Flujo de Desarrollo Diario
+## Flujo de desarrollo recomendado
 
-1. **Desarrollar en web** (más rápido):
+El proceso típico de desarrollo es:
+
+1. **Desarrollo en el navegador** (más rápido):
    ```bash
    ionic serve
    ```
+   Los cambios en el código se reflejan automáticamente en el navegador.
 
-2. **Cuando quieras probar en móvil**:
+2. **Para probar en dispositivos móviles**:
    ```bash
    ionic build
    ionic capacitor sync
-   ionic capacitor run android    # o ios
+   ionic capacitor run android
    ```
+   
+   - `build` compila la aplicación
+   - `sync` actualiza los proyectos nativos
+   - `run` instala y ejecuta en el dispositivo
 
 ## 📱 Capacidades Nativas Disponibles
 

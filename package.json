@@ -1,15 +1,29 @@
 {
-  "name": "ProyectoApp",
-  "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "name": "pasteleria-d-diego-app",
+  "version": "0.1.0",
+  "author": "Pastelería D'Diego",
+  "homepage": "https://github.com/Moonlightlz/ProyectoApps",
+  "description": "Aplicación móvil híbrida para Pastelería D'Diego",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ionic serve",
+    "build": "ionic build",
+    "build:prod": "ionic build --prod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "android": "ionic capacitor run android",
+    "ios": "ionic capacitor run ios",
+    "sync": "ionic capacitor sync",
+    "add:android": "ionic capacitor add android",
+    "add:ios": "ionic capacitor add ios",
+    "serve": "ionic serve",
+    "generate": "ionic generate",
+    "cap:sync": "npx cap sync",
+    "cap:run:android": "npx cap run android",
+    "cap:run:ios": "npx cap run ios",
+    "firebase:deploy": "firebase deploy",
+    "setup": "npm install && ionic info"
   },
   "private": true,
   "dependencies": {
@@ -63,6 +77,5 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.8.0"
-  },
-  "description": "An Ionic project"
+  }
 }
