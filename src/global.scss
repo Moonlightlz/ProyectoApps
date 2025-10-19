@@ -1,3 +1,7 @@
+/* Tema personalizado de Pastelería D'Diego */
+@import './theme/pastry-animations.scss';
+@import './theme/pastry-backgrounds.scss';
+
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
@@ -35,7 +39,3 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
-
-/* Tema personalizado de Pastelería D'Diego */
-@import './theme/pastry-animations.scss';
-@import './theme/pastry-backgrounds.scss';
