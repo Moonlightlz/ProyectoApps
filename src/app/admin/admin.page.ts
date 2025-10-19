@@ -91,18 +91,68 @@ export class AdminPage implements OnInit, OnDestroy {
 
   private async checkAdminAccess() {
     try {
-      const currentUser = await this.authService.getCurrentUser();
+      console.log('AdminPage: Verificando acceso de administrador...');
+      
+      // Verificar si está logueado
+      if (!this.authService.isLoggedIn()) {
+        console.log('AdminPage: No está logueado');
+        await this.showToast('Debes iniciar sesión para acceder.', 'danger');
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      const currentUser = this.authService.getCurrentUser();
+      console.log('AdminPage: Usuario actual:', currentUser);
+      
+      // Si es un usuario de Firebase, verificar por email primero
       if (currentUser) {
+        console.log('AdminPage: Usuario Firebase encontrado, email:', currentUser.email);
+        
+        // Verificar por email si es admin
+        if (currentUser.email) {
+          const isAdminByEmail = this.userService.isAdminEmail(currentUser.email);
+          console.log('AdminPage: ¿Es admin por email?', isAdminByEmail);
+          
+          if (isAdminByEmail) {
+            this.isAdmin = true;
+            console.log('AdminPage: Acceso concedido por email de admin');
+            return;
+          }
+        }
+        
+        // Verificar por UID como respaldo
         this.isAdmin = await this.userService.isAdmin(currentUser.uid);
+        console.log('AdminPage: ¿Es admin por UID?', this.isAdmin);
+        
         if (!this.isAdmin) {
+          console.log('AdminPage: Usuario de Firebase no es admin');
           await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
           this.router.navigate(['/catalog']);
+          return;
         }
-      } else {
-        this.router.navigate(['/login']);
+        return;
       }
+
+      // Si es un usuario demo (credenciales de prueba)
+      const username = localStorage.getItem('username');
+      const isLoggedInFlag = localStorage.getItem('isLoggedIn');
+      console.log('AdminPage: Username en localStorage:', username);
+      console.log('AdminPage: isLoggedIn en localStorage:', isLoggedInFlag);
+      
+      if (username === 'admin' && isLoggedInFlag === 'true') {
+        console.log('AdminPage: Usuario demo admin verificado');
+        this.isAdmin = true;
+        return;
+      }
+
+      // Si llegamos aquí, no es admin
+      console.log('AdminPage: Acceso denegado - no es administrador');
+      await this.showToast('Acceso denegado. Se requieren permisos de administrador.', 'danger');
+      this.router.navigate(['/catalog']);
+      
     } catch (error) {
       console.error('Error verificando acceso de admin:', error);
+      await this.showToast('Error verificando permisos de administrador.', 'danger');
       this.router.navigate(['/catalog']);
     }
   }
@@ -360,50 +410,17 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   // Gestión de imágenes
+  // Función deprecada - ahora se usa selectImageSource()
   async addProductImage() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Agregar imagen',
-      buttons: [
-        {
-          text: 'Tomar foto',
-          icon: 'camera',
-          handler: () => {
-            this.takePhoto();
-          }
-        },
-        {
-          text: 'Seleccionar de galería',
-          icon: 'images',
-          handler: () => {
-            this.selectFromGallery();
-          }
-        },
-        {
-          text: 'Cancelar',
-          icon: 'close',
-          role: 'cancel'
-        }
-      ]
-    });
-    await actionSheet.present();
+    await this.selectImageSource();
   }
 
+  // Función deprecada - ahora se usa takePictureFromCamera()
   private async takePhoto() {
-    try {
-      // TODO: Implementar toma de foto
-      const imageUrl = 'https://via.placeholder.com/300x200.png?text=Producto';
-      this.productForm.imageUrl = imageUrl;
-      await this.showToast('Imagen agregada temporalmente', 'success');
-    } catch (error) {
-      console.error('Error tomando foto:', error);
-      await this.showToast('Error al tomar la foto', 'danger');
-    }
+    await this.takePictureFromCamera();
   }
 
-  private async selectFromGallery() {
-    // Implementar selección de galería si es necesario
-    await this.showToast('Función de galería en desarrollo', 'warning');
-  }
+
 
   private async uploadProductImage(photo: any): Promise<string> {
     const loading = await this.loadingController.create({
@@ -420,14 +437,6 @@ export class AdminPage implements OnInit, OnDestroy {
       throw error;
     } finally {
       await loading.dismiss();
-    }
-  }
-
-  removeProductImage(index?: number) {
-    if (index !== undefined && this.productForm.images.length > index) {
-      this.productForm.images.splice(index, 1);
-    } else {
-      this.productForm.imageUrl = '';
     }
   }
 
@@ -463,9 +472,9 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-CO', {
+    return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'COP'
+      currency: 'PEN'
     }).format(price);
   }
 
@@ -494,5 +503,490 @@ export class AdminPage implements OnInit, OnDestroy {
 
   getUnavailableProductsCount(): number {
     return this.filteredProducts.filter(product => !product.isAvailable).length;
+  }
+
+  // Funciones para manejo de imágenes con cámara y galería
+  
+  /**
+   * Abre opciones para seleccionar imagen (cámara o galería)
+   */
+  async selectImageSource() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Seleccionar Imagen',
+      buttons: [
+        {
+          text: 'Tomar Foto',
+          icon: 'camera',
+          handler: () => {
+            this.takePictureFromCamera();
+          }
+        },
+        {
+          text: 'Elegir de Galería',
+          icon: 'images',
+          handler: () => {
+            this.selectFromGallery();
+          }
+        },
+        {
+          text: 'Ingresar URL',
+          icon: 'link',
+          handler: () => {
+            this.addImageByURL();
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
+        }
+      ]
+    });
+    await actionSheet.present();
+  }
+
+  /**
+   * Tomar foto con la cámara
+   */
+  async takePictureFromCamera() {
+    try {
+      // En un entorno real, aquí usarías Capacitor Camera
+      // Por ahora, simularemos con una URL de placeholder
+      const alert = await this.alertController.create({
+        header: 'Simulación de Cámara',
+        message: 'En una app real, esto abriría la cámara. Por ahora, ingresa una URL de imagen:',
+        inputs: [
+          {
+            name: 'imageUrl',
+            type: 'text',
+            placeholder: 'https://ejemplo.com/imagen.jpg'
+          }
+        ],
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          },
+          {
+            text: 'Agregar',
+            handler: (data) => {
+              if (data.imageUrl) {
+                this.addImageToForm(data.imageUrl);
+              }
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } catch (error) {
+      console.error('Error tomando foto:', error);
+      await this.showToast('Error al acceder a la cámara', 'danger');
+    }
+  }
+
+  /**
+   * Seleccionar imagen de la galería
+   */
+  async selectFromGallery() {
+    try {
+      // En un entorno real, aquí usarías Capacitor Camera para gallery
+      // Por ahora, simularemos con una URL de placeholder
+      const alert = await this.alertController.create({
+        header: 'Simulación de Galería',
+        message: 'En una app real, esto abriría la galería. Por ahora, ingresa una URL de imagen:',
+        inputs: [
+          {
+            name: 'imageUrl',
+            type: 'text',
+            placeholder: 'https://ejemplo.com/imagen.jpg'
+          }
+        ],
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          },
+          {
+            text: 'Agregar',
+            handler: (data) => {
+              if (data.imageUrl) {
+                this.addImageToForm(data.imageUrl);
+              }
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } catch (error) {
+      console.error('Error accediendo a galería:', error);
+      await this.showToast('Error al acceder a la galería', 'danger');
+    }
+  }
+
+  /**
+   * Agregar imagen por URL
+   */
+  async addImageByURL() {
+    const alert = await this.alertController.create({
+      header: 'Agregar Imagen por URL',
+      inputs: [
+        {
+          name: 'imageUrl',
+          type: 'text',
+          placeholder: 'https://ejemplo.com/imagen.jpg'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Agregar',
+          handler: (data) => {
+            if (data.imageUrl) {
+              this.addImageToForm(data.imageUrl);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Agregar imagen al formulario
+   */
+  addImageToForm(imageUrl: string) {
+    if (!this.productForm.images) {
+      this.productForm.images = [];
+    }
+    
+    // Si no hay imagen principal, establecer como imagen principal
+    if (!this.productForm.imageUrl) {
+      this.productForm.imageUrl = imageUrl;
+    } else {
+      // Si ya hay imagen principal, agregar a la lista de imágenes adicionales
+      this.productForm.images.push(imageUrl);
+    }
+    
+    this.showToast('Imagen agregada exitosamente', 'success');
+  }
+
+  // Nuevos métodos para funcionalidad del administrador
+
+  /**
+   * Abre el gestor de imágenes para un producto
+   */
+  async openImageManager(product: Product) {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Gestionar Imagen',
+      buttons: [
+        {
+          text: 'Cambiar Imagen',
+          icon: 'camera',
+          handler: () => {
+            this.changeProductImage(product);
+          }
+        },
+        {
+          text: 'Ver Imagen Actual',
+          icon: 'eye',
+          handler: () => {
+            this.viewProductImage(product);
+          }
+        },
+        {
+          text: 'Eliminar Imagen',
+          icon: 'trash',
+          role: 'destructive',
+          handler: () => {
+            this.removeProductImage(product);
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
+        }
+      ]
+    });
+    await actionSheet.present();
+  }
+
+  /**
+   * Cambia la imagen de un producto
+   */
+  async changeProductImage(product: Product) {
+    const alert = await this.alertController.create({
+      header: 'Cambiar Imagen',
+      message: 'Ingresa la nueva URL de la imagen',
+      inputs: [
+        {
+          name: 'imageUrl',
+          type: 'text',
+          placeholder: 'https://ejemplo.com/imagen.jpg',
+          value: product.imageUrl || ''
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            if (data.imageUrl) {
+              await this.updateProductField(product, 'imageUrl', data.imageUrl);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Ver imagen del producto en tamaño completo
+   */
+  async viewProductImage(product: Product) {
+    if (!product.imageUrl) {
+      await this.showToast('Este producto no tiene imagen', 'warning');
+      return;
+    }
+    
+    const alert = await this.alertController.create({
+      header: product.name,
+      message: `<img src="${product.imageUrl}" style="width: 100%; max-width: 300px; height: auto;">`,
+      buttons: ['Cerrar']
+    });
+    await alert.present();
+  }
+
+  /**
+   * Elimina la imagen de un producto
+   */
+  async removeProductImage(product: Product) {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Imagen',
+      message: '¿Estás seguro de que quieres eliminar la imagen de este producto?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: async () => {
+            await this.updateProductField(product, 'imageUrl', '');
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Elimina una imagen del formulario por índice
+   */
+  removeFormImage(index: number) {
+    if (index !== undefined && this.productForm.images.length > index) {
+      this.productForm.images.splice(index, 1);
+    } else {
+      this.productForm.imageUrl = '';
+    }
+  }
+
+  /**
+   * Edita la información básica del producto (nombre y descripción)
+   */
+  async editProductInfo(product: Product) {
+    const alert = await this.alertController.create({
+      header: 'Editar Información',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Nombre del producto',
+          value: product.name
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          placeholder: 'Descripción del producto',
+          value: product.description
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            if (data.name && data.description) {
+              const updates: Partial<Product> = {
+                name: data.name,
+                description: data.description
+              };
+              await this.updateProductFields(product, updates);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Edita el precio del producto
+   */
+  async editPrice(product: Product) {
+    const alert = await this.alertController.create({
+      header: 'Editar Precio',
+      message: 'Ingresa el nuevo precio del producto',
+      inputs: [
+        {
+          name: 'price',
+          type: 'number',
+          placeholder: 'Precio en SOLES',
+          value: product.price.toString()
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            const price = parseFloat(data.price);
+            if (price > 0) {
+              await this.updateProductField(product, 'price', price);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Ver detalles completos del producto
+   */
+  async viewProductDetails(product: Product) {
+    const alert = await this.alertController.create({
+      header: product.name,
+      message: `
+        <div style="text-align: left;">
+          <p><strong>Descripción:</strong> ${product.description || 'Sin descripción'}</p>
+          <p><strong>Precio:</strong> ${this.formatPrice(product.price)}</p>
+          <p><strong>Categoría:</strong> ${this.getCategoryName(product.categoryId)}</p>
+          <p><strong>Disponible:</strong> ${product.isAvailable ? 'Sí' : 'No'}</p>
+          ${product.preparationTime ? `<p><strong>Tiempo de preparación:</strong> ${product.preparationTime} min</p>` : ''}
+          ${product.servingSize ? `<p><strong>Porciones:</strong> ${product.servingSize}</p>` : ''}
+          ${product.ingredients?.length ? `<p><strong>Ingredientes:</strong> ${product.ingredients.join(', ')}</p>` : ''}
+          ${product.allergens?.length ? `<p><strong>Alérgenos:</strong> ${product.allergens.join(', ')}</p>` : ''}
+        </div>
+      `,
+      buttons: [
+        {
+          text: 'Editar',
+          handler: () => {
+            this.editProduct(product);
+          }
+        },
+        {
+          text: 'Cerrar'
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Abre el formulario de edición completa del producto
+   */
+  editProduct(product: Product) {
+    this.openProductForm(product);
+  }
+
+  /**
+   * Actualiza un campo específico del producto
+   */
+  async updateProductField(product: Product, field: keyof Product, value: any) {
+    const loading = await this.loadingController.create({
+      message: 'Actualizando producto...'
+    });
+    await loading.present();
+
+    try {
+      const updateData: any = { [field]: value };
+      const success = await this.productService.updateProduct(product.id, updateData);
+      
+      if (success) {
+        // Actualizar el producto local
+        const index = this.products.findIndex(p => p.id === product.id);
+        if (index !== -1) {
+          this.products[index] = { ...this.products[index], [field]: value };
+          this.filterProducts();
+        }
+        await this.showToast('Producto actualizado exitosamente');
+      } else {
+        await this.showToast('Error al actualizar producto', 'danger');
+      }
+    } catch (error) {
+      console.error('Error updating product field:', error);
+      await this.showToast('Error al actualizar producto', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  /**
+   * Actualiza múltiples campos del producto
+   */
+  async updateProductFields(product: Product, updates: Partial<Product>) {
+    const loading = await this.loadingController.create({
+      message: 'Actualizando producto...'
+    });
+    await loading.present();
+
+    try {
+      const success = await this.productService.updateProduct(product.id, updates);
+      
+      if (success) {
+        // Actualizar el producto local
+        const index = this.products.findIndex(p => p.id === product.id);
+        if (index !== -1) {
+          this.products[index] = { ...this.products[index], ...updates };
+          this.filterProducts();
+        }
+        await this.showToast('Producto actualizado exitosamente');
+      } else {
+        await this.showToast('Error al actualizar producto', 'danger');
+      }
+    } catch (error) {
+      console.error('Error updating product fields:', error);
+      await this.showToast('Error al actualizar producto', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  // Validación del formulario
+  isFormValid(): boolean {
+    const form = this.productForm;
+    return !!(
+      form.name?.trim() &&
+      form.description?.trim() &&
+      form.price &&
+      form.price > 0 &&
+      form.categoryId
+    );
   }
 }

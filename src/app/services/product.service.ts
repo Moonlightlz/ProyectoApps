@@ -351,10 +351,23 @@ export class ProductService {
         } as ProductCategory);
       });
       
+      // Si no hay categorías en Firestore, devolver las categorías por defecto
+      if (categories.length === 0) {
+        console.log('No hay categorías en Firestore, usando categorías por defecto');
+        return DEFAULT_CATEGORIES.map((cat, index) => ({
+          ...cat,
+          id: `default-${index + 1}`
+        }));
+      }
+      
       return categories;
     } catch (error) {
       console.error('Error obteniendo categorías:', error);
-      return [];
+      // En caso de error, devolver las categorías por defecto
+      return DEFAULT_CATEGORIES.map((cat, index) => ({
+        ...cat,
+        id: `default-${index + 1}`
+      }));
     }
   }
 

@@ -45,7 +45,8 @@ export class AuthService {
           password === this.TEST_CREDENTIALS.password) {
         // Simular login exitoso para credenciales de prueba
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('username', email);
+        localStorage.setItem('username', this.TEST_CREDENTIALS.username); // Guardar 'admin', no el email
+        console.log('AuthService: Login demo exitoso, guardando username =', this.TEST_CREDENTIALS.username);
         return { success: true, user: null, isDemo: true };
       }
 

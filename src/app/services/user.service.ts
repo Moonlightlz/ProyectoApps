@@ -19,15 +19,23 @@ export class UserService {
    */
   async isAdmin(uid: string): Promise<boolean> {
     try {
-      // Por ahora, verificamos si el email está en la lista de admins
-      // En un futuro se podría consultar la base de datos
+      console.log('UserService: Verificando admin para UID:', uid);
       
-      // Simulamos la verificación - en producción esto consultaría Firebase
+      // Obtener el email del usuario actual de Firebase Auth
+      // En una implementación real, esto consultaría Firestore
       return this.checkAdminByUid(uid);
     } catch (error) {
       console.error('Error verificando si es admin:', error);
       return false;
     }
+  }
+
+  /**
+   * Verifica si un usuario es administrador basado en su email
+   */
+  async isAdminByEmail(email: string): Promise<boolean> {
+    console.log('UserService: Verificando admin por email:', email);
+    return this.isAdminEmail(email);
   }
 
   /**
@@ -49,10 +57,25 @@ export class UserService {
    * En producción esto consultaría Firestore
    */
   private async checkAdminByUid(uid: string): Promise<boolean> {
-    // Simulación - en producción consultaría la base de datos
-    // por ahora retornamos true para ciertos UIDs de prueba
-    const adminUids = ['admin-uid-1', 'admin-uid-2'];
-    return adminUids.includes(uid);
+    try {
+      console.log('UserService: checkAdminByUid - UID:', uid);
+      
+      // En una implementación real, esto haría una consulta a Firestore
+      // para obtener el perfil del usuario y verificar su rol o email
+      
+      // Por ahora, como es una simulación, vamos a:
+      // 1. Verificar si el UID contiene palabras clave de admin
+      // 2. En el futuro, esto sería reemplazado por una consulta real a Firestore
+      
+      const adminKeywords = ['admin', 'diego', 'administrador'];
+      const isAdminUID = adminKeywords.some(keyword => uid.toLowerCase().includes(keyword));
+      
+      console.log('UserService: checkAdminByUid - Es admin?', isAdminUID);
+      return isAdminUID;
+    } catch (error) {
+      console.error('Error en checkAdminByUid:', error);
+      return false;
+    }
   }
 
   /**

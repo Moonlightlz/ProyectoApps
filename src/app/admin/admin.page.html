@@ -99,84 +99,131 @@
       </div>
     </div>
 
-    <!-- Productos -->
-    <div *ngIf="!loading && filteredProducts.length > 0" class="products-list">
-      <div *ngFor="let product of filteredProducts" class="product-item">
-        <div class="product-image-container">
-          <img 
-            [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
-            [alt]="product.name"
-            class="product-image">
+    <!-- Productos en formato de tarjetas -->
+    <div *ngIf="!loading && filteredProducts.length > 0" class="products-grid">
+      <div *ngFor="let product of filteredProducts" class="product-card">
+        
+        <!-- Contenedor de Imagen -->
+        <div class="image-container">
+          <div class="image-wrapper">
+            <img 
+              [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
+              [alt]="product.name"
+              class="product-image"
+              (click)="openImageManager(product)">
+            <div class="image-overlay">
+              <ion-button fill="clear" size="small" (click)="openImageManager(product)">
+                <ion-icon name="camera" color="light"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          
+          <!-- Badge de disponibilidad -->
           <div class="availability-badge" 
                [class.available]="product.isAvailable" 
                [class.unavailable]="!product.isAvailable">
             <ion-icon [name]="product.isAvailable ? 'checkmark-circle' : 'close-circle'"></ion-icon>
           </div>
+          
+          <!-- Badge destacado -->
+          <div *ngIf="product.featured" class="featured-badge">
+            <ion-icon name="star" color="warning"></ion-icon>
+          </div>
         </div>
         
-        <div class="product-info">
+        <!-- Contenedor de Información -->
+        <div class="info-container">
+          <!-- Header con nombre y categoría -->
           <div class="product-header">
-            <h3 class="product-name">{{product.name}}</h3>
-            <span class="product-category">{{getCategoryName(product.categoryId || product.category.id)}}</span>
+            <h3 class="product-name" (click)="editProductInfo(product)">{{product.name}}</h3>
+            <span class="product-category">{{getCategoryName(product.categoryId || product.category?.id)}}</span>
           </div>
           
-          <p class="product-description">{{product.description}}</p>
+          <!-- Descripción editable -->
+          <div class="description-container">
+            <p class="product-description" (click)="editProductInfo(product)">
+              {{product.description || 'Sin descripción'}}
+            </p>
+            <ion-button fill="clear" size="small" class="edit-description-btn" (click)="editProductInfo(product)">
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+          </div>
           
-          <div class="product-details">
-            <span class="product-price">{{formatPrice(product.price)}}</span>
-            <div class="product-badges">
-              <ion-badge *ngIf="product.featured" color="warning">
-                <ion-icon name="star"></ion-icon>
-                Destacado
-              </ion-badge>
+          <!-- Contenedor de Precio -->
+          <div class="price-container">
+            <div class="price-display" (click)="editPrice(product)">
+              <span class="price-label">Precio:</span>
+              <span class="product-price">{{formatPrice(product.price)}}</span>
+              <ion-button fill="clear" size="small" class="edit-price-btn">
+                <ion-icon name="create-outline"></ion-icon>
+              </ion-button>
             </div>
           </div>
 
           <!-- Información adicional -->
-          <div class="product-extra-info">
-            <div class="info-item" *ngIf="product.preparationTime">
-              <ion-icon name="time"></ion-icon>
+          <div class="product-meta">
+            <div class="meta-item" *ngIf="product.preparationTime">
+              <ion-icon name="time-outline"></ion-icon>
               <span>{{product.preparationTime}} min</span>
             </div>
-            <div class="info-item" *ngIf="product.servingSize">
-              <ion-icon name="people"></ion-icon>
+            <div class="meta-item" *ngIf="product.servingSize">
+              <ion-icon name="people-outline"></ion-icon>
               <span>{{product.servingSize}}</span>
             </div>
-            <div class="info-item">
-              <ion-icon name="images"></ion-icon>
+            <div class="meta-item">
+              <ion-icon name="images-outline"></ion-icon>
               <span>{{(product.images?.length || 0) + (product.imageUrl ? 1 : 0)}} fotos</span>
             </div>
           </div>
         </div>
         
-        <div class="product-actions">
-          <ion-button 
-            fill="clear" 
-            size="small"
-            [color]="product.isAvailable ? 'success' : 'medium'"
-            (click)="toggleProductAvailability(product)">
-            <ion-icon [name]="product.isAvailable ? 'eye' : 'eye-off'"></ion-icon>
-          </ion-button>
-          
-          <ion-button 
-            fill="clear" 
-            size="small"
-            color="primary"
-            (click)="openProductForm(product)">
-            <ion-icon name="create"></ion-icon>
-          </ion-button>
-          
-          <ion-button 
-            fill="clear" 
-            size="small"
-            color="danger"
-            (click)="deleteProduct(product)">
-            <ion-icon name="trash"></ion-icon>
-          </ion-button>
+        <!-- Contenedor de Acciones -->
+        <div class="actions-container">
+          <div class="action-buttons">
+            <!-- Botón Ver Detalles -->
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              size="small"
+              (click)="viewProductDetails(product)">
+              <ion-icon name="eye-outline" slot="start"></ion-icon>
+              Ver Detalles
+            </ion-button>
+            
+            <!-- Botón Editar -->
+            <ion-button 
+              expand="block" 
+              color="primary" 
+              size="small"
+              (click)="editProduct(product)">
+              <ion-icon name="create-outline" slot="start"></ion-icon>
+              Editar
+            </ion-button>
+            
+            <!-- Toggle Disponibilidad -->
+            <ion-button 
+              expand="block" 
+              [color]="product.isAvailable ? 'success' : 'medium'"
+              size="small"
+              (click)="toggleProductAvailability(product)">
+              <ion-icon [name]="product.isAvailable ? 'eye-outline' : 'eye-off-outline'" slot="start"></ion-icon>
+              {{product.isAvailable ? 'Disponible' : 'No disponible'}}
+            </ion-button>
+            
+            <!-- Botón Eliminar -->
+            <ion-button 
+              expand="block" 
+              color="danger" 
+              fill="outline"
+              size="small"
+              (click)="deleteProduct(product)">
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              Eliminar
+            </ion-button>
+          </div>
         </div>
       </div>
     </div>
-
     <!-- Estado vacío -->
     <div *ngIf="!loading && filteredProducts.length === 0" class="empty-state">
       <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
@@ -431,7 +478,7 @@
             <ion-button 
               fill="outline" 
               size="small"
-              (click)="addProductImage()">
+              (click)="selectImageSource()">
               <ion-icon name="camera" slot="start"></ion-icon>
               Agregar Foto
             </ion-button>
@@ -447,7 +494,7 @@
                 size="small"
                 color="danger"
                 class="remove-image-btn"
-                (click)="removeProductImage(i)">
+                (click)="removeFormImage(i)">
                 <ion-icon name="close-circle"></ion-icon>
               </ion-button>
             </div>
@@ -472,7 +519,7 @@
           <ion-button 
             type="submit"
             expand="block"
-            [disabled]="!productFormRef.form.valid">
+            [disabled]="!isFormValid()">
             {{editingProduct ? 'Actualizar' : 'Crear'}} Producto
           </ion-button>
         </div>

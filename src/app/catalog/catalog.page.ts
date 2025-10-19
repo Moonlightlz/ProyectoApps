@@ -138,23 +138,46 @@ export class CatalogPage implements OnInit {
 
   async checkAdminStatus() {
     try {
+      console.log('CatalogPage: Verificando status de admin...');
+      
       // Verificar si está logueado
-      if (!this.authService.isLoggedIn()) {
+      const isLoggedIn = this.authService.isLoggedIn();
+      console.log('CatalogPage: isLoggedIn =', isLoggedIn);
+      
+      if (!isLoggedIn) {
+        console.log('CatalogPage: No está logueado, isAdmin = false');
         this.isAdmin = false;
         return;
       }
 
       const currentUser = this.authService.getCurrentUser();
+      console.log('CatalogPage: currentUser =', currentUser);
       
-      // Si es un usuario de Firebase, verificar por UID
+      // Si es un usuario de Firebase, verificar por email y UID
       if (currentUser) {
+        console.log('CatalogPage: Usuario Firebase encontrado, email:', currentUser.email);
+        
+        // Verificar por email primero
+        if (currentUser.email) {
+          const isAdminByEmail = this.userService.isAdminEmail(currentUser.email);
+          console.log('CatalogPage: Admin por email =', isAdminByEmail);
+          
+          if (isAdminByEmail) {
+            this.isAdmin = true;
+            return;
+          }
+        }
+        
+        // Verificar por UID como respaldo
         this.isAdmin = await this.userService.isAdmin(currentUser.uid);
+        console.log('CatalogPage: Admin por UID =', this.isAdmin);
         return;
       }
 
       // Si es un usuario demo (credenciales de prueba)
       const username = localStorage.getItem('username');
       this.isAdmin = username === 'admin';
+      console.log('CatalogPage: Admin por demo =', this.isAdmin, 'username =', username);
       
     } catch (error) {
       console.error('Error verificando status de admin:', error);
@@ -222,13 +245,19 @@ export class CatalogPage implements OnInit {
   }
 
   goToAdminPanel() {
+    console.log('CatalogPage: Intentando navegar a admin panel...');
+    console.log('CatalogPage: isAdmin =', this.isAdmin);
+    console.log('CatalogPage: localStorage username =', localStorage.getItem('username'));
+    console.log('CatalogPage: localStorage isLoggedIn =', localStorage.getItem('isLoggedIn'));
+    console.log('CatalogPage: authService.isLoggedIn() =', this.authService.isLoggedIn());
+    
     this.router.navigate(['/admin']);
   }
 
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-CO', {
+    return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'COP',
+      currency: 'PEN',
       minimumFractionDigits: 0
     }).format(price);
   }
