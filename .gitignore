@@ -48,6 +48,27 @@ yarn-error.log
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
+!.vscode/extensions.json
+
+# Environment files with sensitive data
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Firebase sensitive config (uncomment after creating templates)
+# src/environments/environment.ts
+# src/environments/environment.prod.ts
+
+# Firebase keys and certificates
+google-services.json
+GoogleService-Info.plist
+firebase-debug.log
+firebase-debug.*.log
+
+# Capacitor
+/ios/App/App/GoogleService-Info.plist
+/android/app/google-services.json
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
