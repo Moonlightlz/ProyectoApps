@@ -10,13 +10,27 @@ Aplicación móvil híbrida para la pastelería D'Diego, desarrollada con Ionic,
 - Git
 
 ### Instalación
+
+#### Opción 1: Setup Automático (Recomendado)
 ```bash
 # Clonar el repositorio
 git clone https://github.com/Moonlightlz/ProyectoApps.git
 cd ProyectoApps
 
+# Configuración automática
+node setup.js
+```
+
+#### Opción 2: Setup Manual
+```bash
+# Instalar Ionic CLI globalmente
+npm install -g @ionic/cli
+
 # Instalar dependencias
 npm install
+
+# Verificar instalación
+npm run doctor
 
 # Ejecutar en desarrollo
 ionic serve
@@ -145,11 +159,48 @@ La aplicación incluye acceso a:
 - Notificaciones push (configuración pendiente)
 - Geolocalización (configuración pendiente)
 
-## 🐛 Problemas Conocidos
+## 🐛 Problemas Conocidos y Soluciones
 
+### Error: "Cannot find module '@capacitor/camera'"
+**Problema**: Al clonar el proyecto y ejecutar `ionic serve`, aparecen errores de módulos de Capacitor no encontrados.
+
+**Solución**:
+```bash
+# 1. Verificar que Node.js está instalado (versión 18+)
+node --version
+
+# 2. Limpiar caché e instalar dependencias
+rm -rf node_modules package-lock.json
+npm install
+
+# 3. Si persiste, instalar dependencias de Capacitor manualmente
+npm install @capacitor/camera @capacitor/filesystem @capacitor/core @capacitor/cli
+
+# 4. Verificar instalación
+ionic info
+npx cap doctor
+```
+
+### Error: "JAVA_HOME not set" (Solo Android)
+**Problema**: Al generar APK, Gradle no encuentra Java.
+
+**Solución Windows**:
+```powershell
+# Configurar variables de entorno temporalmente
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+java -version
+```
+
+### Error de permisos en Android
+**Problema**: La cámara no funciona en dispositivos Android.
+
+**Solución**: Verificar permisos en `android/app/src/main/AndroidManifest.xml`
+
+### Otros problemas comunes
 - La primera carga puede ser lenta debido a la inicialización de Firebase
 - En iOS, las notificaciones push requieren certificados de Apple
-- Android requiere permisos específicos para cámara y almacenamiento
+- Usar Java 11+ para compilación de Android (Java 8 no es compatible)
 
 ## 📊 Estado del Proyecto
 

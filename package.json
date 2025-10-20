@@ -23,7 +23,10 @@
     "cap:run:android": "npx cap run android",
     "cap:run:ios": "npx cap run ios",
     "firebase:deploy": "firebase deploy",
-    "setup": "npm install && ionic info"
+    "setup": "node setup.js",
+    "doctor": "node diagnostic.js",
+    "fix": "rm -rf node_modules package-lock.json && npm install",
+    "postinstall": "ionic info || echo 'Ionic CLI not found - install with: npm install -g @ionic/cli'"
   },
   "private": true,
   "dependencies": {
