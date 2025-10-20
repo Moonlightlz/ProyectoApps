@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "123456789",
+    "project_id": "pasteleria-diego-test",
+    "storage_bucket": "pasteleria-diego-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789:android:abc123def456",
+        "android_client_info": {
+          "package_name": "com.pasteleria.diego"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "123456789-abc123def456.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyExample-Key-For-Testing-Only"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
