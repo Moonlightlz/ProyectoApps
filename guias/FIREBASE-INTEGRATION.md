@@ -12,7 +12,7 @@ Firebase fue seleccionado como backend después de evaluar varias opciones, por 
 - Es mantenido por Google, garantizando confiabilidad
 
 ## Componentes instalados
-
+aaa
 El proyecto incluye:
 - Firebase SDK versión 10.x
 - AngularFire (integración con Angular)
