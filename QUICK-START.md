@@ -2,34 +2,62 @@
 
 ## Para nuevos desarrolladores que clonan el proyecto
 
-### Opción 1: Setup Automático (Recomendado)
-```bash
+### Opción 1: Script Automático Windows (MÁS FÁCIL)
+```powershell
 # Después de clonar el repositorio
 cd ProyectoApps
-node setup.js
+
+# Ejecutar script de Windows (como Administrador)
+.\install-windows.ps1
+
+# O usando el archivo .bat
+.\install-windows.bat
 ```
 
-### Opción 2: Setup Manual
+### Opción 2: Setup Manual Universal
 ```bash
-# 1. Instalar Ionic CLI globalmente
-npm install -g @ionic/cli
+# 1. Limpiar cualquier instalación anterior
+rm -rf node_modules package-lock.json
 
 # 2. Instalar dependencias
 npm install
 
-# 3. Si hay errores de Capacitor, reinstalar módulos
+# 3. El script post-install verificará automáticamente
+# Si hay errores, ejecutar:
+npm run fix
+```
+
+### Opción 3: Setup Node.js Manual
+```bash
+# 1. Instalar Ionic CLI globalmente
+npm install -g @ionic/cli
+
+# 2. Instalar dependencias específicas si fallan
 npm install @capacitor/core @capacitor/cli @capacitor/camera @capacitor/filesystem
 
-# 4. Verificar instalación
-ionic info
-npx cap doctor
+# 3. Verificar instalación
+npm run doctor
 ```
 
 ## Errores Comunes y Soluciones
 
-### ❌ "Cannot find module '@capacitor/camera'"
+### ❌ "Cannot find module '@capacitor/camera'" (ERROR DE KENNY)
+```powershell
+# SOLUCIÓN WINDOWS (PowerShell):
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
+npm cache clean --force
+npm install
+
+# Si persiste, instalar manualmente:
+npm install @capacitor/camera @capacitor/filesystem @capacitor/core @capacitor/cli
+
+# Verificar:
+npm run doctor
+```
+
 ```bash
-# Limpiar e instalar
+# SOLUCIÓN UNIVERSAL (Git Bash/CMD):
 rm -rf node_modules package-lock.json
 npm install
 ```

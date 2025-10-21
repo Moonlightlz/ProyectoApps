@@ -26,7 +26,7 @@
     "setup": "node setup.js",
     "doctor": "node diagnostic.js",
     "fix": "rm -rf node_modules package-lock.json && npm install",
-    "postinstall": "ionic info || echo 'Ionic CLI not found - install with: npm install -g @ionic/cli'"
+    "postinstall": "node post-install.js"
   },
   "private": true,
   "dependencies": {
