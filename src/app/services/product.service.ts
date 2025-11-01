@@ -24,91 +24,7 @@ export class ProductService {
   constructor(
     private firestore: Firestore,
     private storage: Storage
-  ) { 
-    // this.testFirestoreConnection(); // Deshabilitado para producción
-  }
-
-  /**
-   * Probar conexión directa con Firestore
-   */
-  async testFirestoreConnection(): Promise<void> {
-    try {
-      console.log('🧪 PROBANDO CONEXIÓN CON FIRESTORE...');
-      
-      // Intentar obtener información básica de Firestore
-      const testRef = collection(this.firestore, 'products');
-      console.log('✅ Referencia de colección creada:', testRef);
-      
-      // Intentar hacer una consulta simple
-      const snapshot = await getDocs(testRef);
-      console.log(`✅ Consulta exitosa. Documentos encontrados: ${snapshot.size}`);
-      
-      if (snapshot.size > 0) {
-        console.log('📋 Primeros documentos en la colección:');
-        snapshot.docs.slice(0, 3).forEach((doc, index) => {
-          console.log(`   ${index + 1}. ID: ${doc.id}`, doc.data());
-        });
-      } else {
-        console.log('⚠️ La colección "products" está vacía');
-      }
-      
-    } catch (error) {
-      console.error('❌ ERROR EN CONEXIÓN CON FIRESTORE:', error);
-      console.error('   Posibles causas:');
-      console.error('   1. Configuración de Firebase incorrecta');
-      console.error('   2. Reglas de seguridad muy restrictivas');
-      console.error('   3. Problemas de red');
-      console.error('   4. Proyecto de Firebase no configurado');
-    }
-  }
-
-  /**
-   * Probar reglas de seguridad de Firestore
-   */
-  async testFirestoreRules(): Promise<void> {
-    try {
-      console.log('🔒 PROBANDO REGLAS DE SEGURIDAD DE FIRESTORE...');
-      
-      // Probar lectura de productos
-      console.log('📖 Probando lectura de productos...');
-      const productsRef = collection(this.firestore, 'products');
-      const readTest = await getDocs(productsRef);
-      console.log(`✅ Lectura exitosa: ${readTest.size} documentos`);
-      
-      // Probar lectura de categorías
-      console.log('📖 Probando lectura de categorías...');
-      const categoriesRef = collection(this.firestore, 'categories');
-      const categoriesTest = await getDocs(categoriesRef);
-      console.log(`✅ Lectura de categorías exitosa: ${categoriesTest.size} documentos`);
-      
-      // Probar escritura (crear un documento de prueba)
-      console.log('✍️ Probando escritura...');
-      const testDoc = doc(collection(this.firestore, 'test'));
-      await setDoc(testDoc, {
-        test: true,
-        timestamp: new Date(),
-        message: 'Test de escritura'
-      });
-      console.log('✅ Escritura exitosa');
-      
-      // Limpiar documento de prueba
-      await deleteDoc(testDoc);
-      console.log('🧹 Documento de prueba eliminado');
-      
-    } catch (error) {
-      console.error('❌ ERROR EN REGLAS DE SEGURIDAD:', error);
-      if (error instanceof Error) {
-        if (error.message.includes('permission-denied')) {
-          console.error('🚫 PROBLEMA: Permisos denegados');
-          console.error('💡 SOLUCIÓN: Revisar reglas de seguridad en Firebase Console');
-          console.error('🔗 Firebase Console: https://console.firebase.google.com');
-        } else if (error.message.includes('unauthenticated')) {
-          console.error('🚫 PROBLEMA: Usuario no autenticado');
-          console.error('💡 SOLUCIÓN: Iniciar sesión primero');
-        }
-      }
-    }
-  }
+  ) { }
   async getAllProductsRaw(): Promise<any[]> {
     try {
       const productsRef = collection(this.firestore, 'products');
@@ -125,22 +41,20 @@ export class ProductService {
       
       return rawProducts;
     } catch (error) {
-      console.error('❌ Error obteniendo productos raw:', error);
+      console.error('error obteniendo productos raw:', error);
       return [];
     }
   }
 
-  /**
-   * Inicializar categorías por defecto (ejecutar una sola vez)
-   */
+  // inicializar categorias por defecto ejecutar una sola vez
   async initializeDefaultCategories(): Promise<void> {
     try {
       const categoriesRef = collection(this.firestore, 'categories');
       
-      // Verificar si ya existen categorías para evitar duplicados
+      // verificar si ya existen categorias para evitar duplicados
       const existingCategoriesSnapshot = await getDocs(categoriesRef);
       if (existingCategoriesSnapshot.size > 0) {
-        return; // Ya hay categorías, no hacer nada
+        return;
       }
       
       for (let i = 0; i < DEFAULT_CATEGORIES.length; i++) {

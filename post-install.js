@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * Script de verificación post-instalación
- * Se ejecuta automáticamente después de npm install
- */
+// script de verificacion post instalacion
+// se ejecuta automaticamente despues de npm install
 
 const fs = require('fs');
 const path = require('path');
@@ -22,7 +20,7 @@ function log(message, color = colors.reset) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
-// Dependencias críticas que deben estar presentes
+// dependencias criticas que deben estar presentes
 const criticalDependencies = [
   '@capacitor/core',
   '@capacitor/cli', 
@@ -42,7 +40,7 @@ console.log('\n🔍 Verificando instalación post-npm install...\n');
 let missingDependencies = [];
 let hasErrors = false;
 
-// Verificar cada dependencia crítica
+// verificar cada dependencia critica
 criticalDependencies.forEach(dep => {
   const depPath = path.join('node_modules', dep);
   if (fs.existsSync(depPath)) {
@@ -54,7 +52,7 @@ criticalDependencies.forEach(dep => {
   }
 });
 
-// Si hay dependencias faltantes, intentar instalarlas
+// si hay dependencias faltantes intentar instalarlas
 if (missingDependencies.length > 0) {
   log(`\n⚠️  Encontradas ${missingDependencies.length} dependencias faltantes`, colors.yellow);
   log('🔧 Intentando instalar dependencias faltantes...', colors.blue);
@@ -74,7 +72,7 @@ if (missingDependencies.length > 0) {
   }
 }
 
-// Verificar archivos de configuración críticos
+// verificar archivos de configuracion criticos
 const criticalFiles = [
   'ionic.config.json',
   'capacitor.config.ts',
@@ -92,20 +90,17 @@ criticalFiles.forEach(file => {
   }
 });
 
-// Resultado final
+// resultado final
 if (!hasErrors) {
   log('\n🎉 ¡Instalación verificada correctamente!', colors.green);
   log('✨ El proyecto está listo para usar', colors.blue);
   log('\n📝 Próximos pasos:', colors.cyan);
   log('   • Para desarrollo: ionic serve', colors.reset);
-  log('   • Para diagnóstico: npm run doctor', colors.reset);
-  log('   • Para ayuda: ver README.md', colors.reset);
+  log('   • Para ayuda: ver guias/Instalacion.md', colors.reset);
 } else {
   log('\n⚠️  Se encontraron problemas en la instalación', colors.yellow);
-  log('🔧 Comandos sugeridos para solucionarlo:', colors.blue);
-  log('   npm run fix', colors.cyan);
-  log('   npm run doctor', colors.cyan);
-  log('   node setup.js', colors.cyan);
+  log('🔧 Intenta reinstalar las dependencias:', colors.blue);
+  log('   npm install', colors.cyan);
 }
 
-console.log(''); // Línea en blanco final
+console.log('');

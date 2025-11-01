@@ -17,7 +17,7 @@ import { User, UserProfile, CreateUserRequest, UpdateUserRequest, UserRole } fro
 })
 export class UserService {
 
-  // Emails de administradores predefinidos
+  // emails de administradores predefinidos
   private readonly ADMIN_EMAILS = [
     'admin@pasteleria-diego.com',
     'diego@pasteleria-diego.com',
@@ -26,49 +26,16 @@ export class UserService {
 
   constructor(private firestore: Firestore) { }
 
-  /**
-   * Método de prueba para verificar conexión con Firestore
-   */
-  async testFirestoreConnection(): Promise<boolean> {
-    try {
-      console.log('UserService: Probando conexión con Firestore...');
-      const testRef = doc(this.firestore, 'test', 'connection');
-      await setDoc(testRef, {
-        timestamp: new Date(),
-        message: 'Test de conexión'
-      });
-      console.log('UserService: Test de escritura exitoso');
-      
-      const testDoc = await getDoc(testRef);
-      console.log('UserService: Test de lectura exitoso:', testDoc.exists());
-      
-      return testDoc.exists();
-    } catch (error) {
-      console.error('UserService: Error en test de conexión:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Crear perfil de usuario en Firestore
-   */
+  // crear perfil de usuario en firestore
   async createUserProfile(uid: string, userData: CreateUserRequest): Promise<boolean> {
     try {
-      console.log('UserService: Iniciando creación de perfil para usuario:', uid);
-      console.log('UserService: Datos del usuario:', userData);
-      console.log('UserService: Firestore instance:', this.firestore);
-      
       const userRef = doc(this.firestore, 'users', uid);
-      console.log('UserService: Referencia creada:', userRef);
       
-      // Verificar si el perfil ya existe
-      console.log('UserService: Verificando si el perfil ya existe...');
+      // verificar si el perfil ya existe
       const existingProfile = await getDoc(userRef);
-      console.log('UserService: Resultado de verificación:', existingProfile.exists());
       
       if (existingProfile.exists()) {
-        console.log('UserService: El perfil ya existe, actualizando...');
-        // Si ya existe, actualizar con la nueva información
+        // si ya existe actualizar con la nueva informacion
         await updateDoc(userRef, {
           displayName: userData.name,
           photoURL: userData.photoUrl,
@@ -77,16 +44,13 @@ export class UserService {
           'profile.name': userData.name,
           'profile.phone': userData.phone
         });
-        console.log('UserService: Perfil actualizado exitosamente');
         return true;
       }
       
-      console.log('UserService: Creando nuevo perfil...');
-      // Determinar rol del usuario
+      // determinar rol del usuario
       const userRole = this.determineUserRole(userData.email);
-      console.log('UserService: Rol asignado:', userRole);
       
-      // Simplificar el objeto para evitar problemas de serialización
+      // simplificar el objeto para evitar problemas de serializacion
       const userProfile = {
         uid,
         email: userData.email,
@@ -115,34 +79,20 @@ export class UserService {
         }
       };
 
-      console.log('UserService: Perfil a crear:', userProfile);
       await setDoc(userRef, userProfile);
-      console.log('UserService: setDoc completado exitosamente');
       
-      // Verificar que se creó correctamente
+      // verificar que se creo correctamente
       const verifyDoc = await getDoc(userRef);
-      console.log('UserService: Verificación final - documento existe:', verifyDoc.exists());
       
-      if (verifyDoc.exists()) {
-        console.log('UserService: Perfil creado y verificado exitosamente');
-        return true;
-      } else {
-        console.error('UserService: El documento no se encontró después de crearlo');
-        return false;
-      }
+      return verifyDoc.exists();
       
     } catch (error: any) {
-      console.error('UserService: Error detallado creating user profile:', error);
-      console.error('UserService: Error code:', error.code);
-      console.error('UserService: Error message:', error.message);
-      console.error('UserService: Error stack:', error.stack);
+      console.error('error creating user profile:', error);
       return false;
     }
   }
 
-  /**
-   * Obtener perfil de usuario
-   */
+  // obtener perfil de usuario
   async getUserProfile(uid: string): Promise<User | null> {
     try {
       const userRef = doc(this.firestore, 'users', uid);
@@ -154,33 +104,29 @@ export class UserService {
         return null;
       }
     } catch (error) {
-      console.error('Error getting user profile:', error);
+      console.error('error getting user profile:', error);
       return null;
     }
   }
 
-  /**
-   * Actualizar perfil de usuario
-   */
+  // actualizar perfil de usuario
   async updateUserProfile(uid: string, updates: UpdateUserRequest): Promise<boolean> {
     try {
       const userRef = doc(this.firestore, 'users', uid);
       
-      // Preparar datos para actualizar
+      // preparar datos para actualizar
       const updateData: any = { ...updates };
       updateData.lastLoginAt = new Date();
 
       await updateDoc(userRef, updateData);
       return true;
     } catch (error) {
-      console.error('Error updating user profile:', error);
+      console.error('error updating user profile:', error);
       return false;
     }
   }
 
-  /**
-   * Actualizar última conexión
-   */
+  // actualizar ultima conexion
   async updateLastLogin(uid: string): Promise<boolean> {
     try {
       const userRef = doc(this.firestore, 'users', uid);
@@ -189,14 +135,12 @@ export class UserService {
       });
       return true;
     } catch (error) {
-      console.error('Error updating last login:', error);
+      console.error('error updating last login:', error);
       return false;
     }
   }
 
-  /**
-   * Agregar producto a favoritos
-   */
+  // agregar producto a favoritos
   async addToFavorites(uid: string, productId: string): Promise<boolean> {
     try {
       const userProfile = await this.getUserProfile(uid);
@@ -216,14 +160,12 @@ export class UserService {
       
       return true;
     } catch (error) {
-      console.error('Error adding to favorites:', error);
+      console.error('error adding to favorites:', error);
       return false;
     }
   }
 
-  /**
-   * Quitar producto de favoritos
-   */
+  // quitar producto de favoritos
   async removeFromFavorites(uid: string, productId: string): Promise<boolean> {
     try {
       const userProfile = await this.getUserProfile(uid);
@@ -241,14 +183,12 @@ export class UserService {
       
       return true;
     } catch (error) {
-      console.error('Error removing from favorites:', error);
+      console.error('error removing from favorites:', error);
       return false;
     }
   }
 
-  /**
-   * Actualizar preferencias de notificaciones
-   */
+  // actualizar preferencias de notificaciones
   async updateNotificationPreferences(uid: string, notifications: any): Promise<boolean> {
     try {
       const userProfile = await this.getUserProfile(uid);
@@ -268,14 +208,12 @@ export class UserService {
       
       return true;
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
+      console.error('error updating notification preferences:', error);
       return false;
     }
   }
 
-  /**
-   * Determinar rol del usuario basado en email
-   */
+  // determinar rol del usuario basado en email
   private determineUserRole(email: string): UserRole {
     if (this.ADMIN_EMAILS.includes(email.toLowerCase())) {
       return UserRole.ADMIN;
@@ -283,49 +221,41 @@ export class UserService {
     return UserRole.USER;
   }
 
-  /**
-   * Verificar si un usuario es administrador
-   */
+  // verificar si un usuario es administrador
   async isAdmin(uid: string): Promise<boolean> {
     try {
       const user = await this.getUserProfile(uid);
       return user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('error checking admin status:', error);
       return false;
     }
   }
 
-  /**
-   * Verificar si un usuario tiene permisos de administrador por email
-   */
+  // verificar si un usuario tiene permisos de administrador por email
   isAdminEmail(email: string): boolean {
     return this.ADMIN_EMAILS.includes(email.toLowerCase());
   }
 
-  /**
-   * Actualizar rol de usuario (solo para super admin)
-   */
+  // actualizar rol de usuario solo para super admin
   async updateUserRole(uid: string, newRole: UserRole, adminUid: string): Promise<boolean> {
     try {
-      // Verificar que quien hace el cambio es super admin
+      // verificar que quien hace el cambio es super admin
       const admin = await this.getUserProfile(adminUid);
       if (admin?.role !== UserRole.SUPER_ADMIN) {
-        console.error('Solo super admin puede cambiar roles');
+        console.error('solo super admin puede cambiar roles');
         return false;
       }
 
       await this.updateUserProfile(uid, { role: newRole });
       return true;
     } catch (error) {
-      console.error('Error updating user role:', error);
+      console.error('error updating user role:', error);
       return false;
     }
   }
 
-  /**
-   * Obtener usuarios por rol
-   */
+  // obtener usuarios por rol
   async getUsersByRole(role: UserRole): Promise<User[]> {
     try {
       const usersRef = collection(this.firestore, 'users');
@@ -351,14 +281,12 @@ export class UserService {
       
       return users;
     } catch (error) {
-      console.error('Error getting users by role:', error);
+      console.error('error getting users by role:', error);
       return [];
     }
   }
 
-  /**
-   * Verificar si email existe
-   */
+  // verificar si email existe
   async emailExists(email: string): Promise<boolean> {
     try {
       const usersRef = collection(this.firestore, 'users');
@@ -367,7 +295,7 @@ export class UserService {
       
       return !querySnapshot.empty;
     } catch (error) {
-      console.error('Error checking email existence:', error);
+      console.error('error checking email existence:', error);
       return false;
     }
   }

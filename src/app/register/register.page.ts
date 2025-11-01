@@ -230,21 +230,7 @@ export class RegisterPage {
         console.log('Usuario creado exitosamente, creando perfil...');
         
         try {
-          // Probar conexión con Firestore primero
-          console.log('Probando conexión con Firestore...');
-          const connectionTest = await this.userService.testFirestoreConnection();
-          console.log('Resultado del test de conexión:', connectionTest);
-          
-          if (!connectionTest) {
-            console.error('No se puede conectar con Firestore');
-            await loading.dismiss();
-            await this.showMessage('Cuenta creada, pero no se puede conectar con la base de datos. Puedes iniciar sesión.', 'warning');
-            this.clearForm();
-            this.goToLogin();
-            return;
-          }
-          
-          // Crear perfil en Firestore
+          // crear perfil en firestore
           const profileCreated = await this.userService.createUserProfile(result.user.uid, {
             name: registerData.name,
             email: registerData.email,

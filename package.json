@@ -10,7 +10,6 @@
     "build": "ionic build",
     "build:prod": "ionic build --prod",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
     "lint": "ng lint",
     "android": "ionic capacitor run android",
     "ios": "ionic capacitor run ios",
@@ -23,9 +22,6 @@
     "cap:run:android": "npx cap run android",
     "cap:run:ios": "npx cap run ios",
     "firebase:deploy": "firebase deploy",
-    "setup": "node setup.js",
-    "doctor": "node diagnostic.js",
-    "fix": "rm -rf node_modules package-lock.json && npm install",
     "postinstall": "node post-install.js"
   },
   "private": true,
