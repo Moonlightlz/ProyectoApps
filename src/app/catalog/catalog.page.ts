@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -107,7 +107,8 @@ export class CatalogPage implements OnInit, ViewWillEnter {
     private loadingController: LoadingController,
     private modalController: ModalController,
     private favoritesService: FavoritesService,
-    private cartService: CartService
+    private cartService: CartService,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({
       search,
@@ -125,16 +126,27 @@ export class CatalogPage implements OnInit, ViewWillEnter {
   }
 
   async ngOnInit() {
-    // Verificar si debemos mostrar solo favoritos
-    this.activatedRoute.queryParams.subscribe(params => {
-      this.showOnlyFavorites = params['showFavorites'] === 'true';
-    });
-    
-    await this.loadData();
+    // Cargar favoritos del usuario
+    await this.favoritesService.loadUserFavorites();
     await this.checkAdminStatus();
   }
 
   async ionViewWillEnter() {
+    // Verificar si viene con parámetro de favoritos
+    const snapshot = this.activatedRoute.snapshot;
+    const showFavoritesParam = snapshot.queryParams['showFavorites'];
+    
+    // Solo activar filtro de favoritos si viene explícitamente en la URL
+    if (showFavoritesParam === 'true') {
+      this.showOnlyFavorites = true;
+    } else {
+      // Resetear a mostrar todos los productos
+      this.showOnlyFavorites = false;
+    }
+    
+    // Forzar detección de cambios para actualizar el botón visual
+    this.cdr.detectChanges();
+    
     await this.loadData();
   }
 

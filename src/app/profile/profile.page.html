@@ -302,16 +302,6 @@
       </ion-card-header>
       
       <ion-card-content>
-        <ion-button 
-          expand="block" 
-          fill="outline" 
-          color="primary" 
-          (click)="viewMyFavorites()"
-          [disabled]="favoritesCount === 0">
-          <ion-icon name="heart-outline" slot="start"></ion-icon>
-          Mis Favoritos ({{ favoritesCount }})
-        </ion-button>
-        
         <ion-button expand="block" fill="outline" color="secondary" disabled>
           <ion-icon name="bag-outline" slot="start"></ion-icon>
           Historial de Pedidos

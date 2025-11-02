@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, deleteDoc, getDocs, query, where, orderBy, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import { UserService } from './user.service';
 import { ProductService } from './product.service';
 import { FavoriteItem } from '../models/cart.model';
 import { Product } from '../models/product.model';
@@ -19,6 +20,7 @@ export class FavoritesService {
   constructor(
     private firestore: Firestore,
     private authService: AuthService,
+    private userService: UserService,
     private productService: ProductService
   ) {
     this.initializeFavorites();
@@ -32,68 +34,69 @@ export class FavoritesService {
   }
 
   /**
-   * Cargar favoritos del usuario desde Firebase
+   * Cargar favoritos del usuario desde el documento del usuario
    */
   async loadUserFavorites(): Promise<void> {
     try {
       const user = this.authService.getCurrentUser();
       if (!user) {
         console.log('No hay usuario logueado para cargar favoritos');
+        this.favoriteProductIds.clear();
+        this.favoritesSubject.next([]);
         return;
       }
 
       console.log('🔍 Cargando favoritos del usuario:', user.displayName);
       
-      const favoritesRef = collection(this.firestore, 'favorites');
-      const q = query(
-        favoritesRef,
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
-      );
+      // Configurar listener en tiempo real al documento del usuario
+      const userDocRef = doc(this.firestore, 'users', user.uid);
+      
+      this.unsubscribeFavorites = onSnapshot(userDocRef, async (docSnapshot) => {
+        if (!docSnapshot.exists()) {
+          console.log('Documento de usuario no existe');
+          this.favoriteProductIds.clear();
+          this.favoritesSubject.next([]);
+          return;
+        }
 
-      // Configurar listener en tiempo real
-      this.unsubscribeFavorites = onSnapshot(q, async (querySnapshot) => {
+        const userData = docSnapshot.data();
+        const favoriteProductIds: string[] = userData['profile']?.['favoriteProducts'] || [];
+        
+        console.log(`❤️ Favoritos encontrados: ${favoriteProductIds.length}`);
+
+        // Actualizar el Set de IDs
+        this.favoriteProductIds = new Set(favoriteProductIds);
+
+        // Cargar los productos completos
         const favorites: FavoriteItem[] = [];
-        const productIds = new Set<string>();
+        const products = await this.productService.getAllProducts();
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const favorite: FavoriteItem = {
-            id: doc.id,
-            userId: data['userId'],
-            productId: data['productId'],
-            createdAt: data['createdAt']?.toDate() || new Date()
-          };
-          favorites.push(favorite);
-          productIds.add(data['productId']);
-        });
-
-        // Cargar los productos completos para los favoritos
-        for (const favorite of favorites) {
-          try {
-            const products = await this.productService.getAllProducts();
-            const product = products.find(p => p.id === favorite.productId);
-            if (product) {
-              favorite.product = product;
-            }
-          } catch (error) {
-            console.error('Error cargando producto del favorito:', error);
+        for (const productId of favoriteProductIds) {
+          const product = products.find(p => p.id === productId);
+          if (product) {
+            favorites.push({
+              id: productId,
+              userId: user.uid,
+              productId: productId,
+              createdAt: new Date(),
+              product: product
+            });
           }
         }
 
-        this.favoriteProductIds = productIds;
         this.favoritesSubject.next(favorites);
-        
-        console.log(`❤️ Favoritos actualizados: ${favorites.length} productos`);
+        console.log(`✅ Favoritos cargados: ${favorites.length} productos con datos completos`);
       });
 
     } catch (error) {
       console.error('Error cargando favoritos:', error);
+      this.favoriteProductIds.clear();
+      this.favoritesSubject.next([]);
     }
   }
 
   /**
-   * Agregar producto a favoritos
+   * Agregar producto a favoritos en el documento del usuario
    */
   async addToFavorites(product: Product): Promise<boolean> {
     try {
@@ -110,11 +113,34 @@ export class FavoritesService {
 
       console.log('➕ Agregando a favoritos:', product.name);
 
-      const favoritesRef = collection(this.firestore, 'favorites');
-      await addDoc(favoritesRef, {
-        userId: user.uid,
-        productId: product.id,
-        createdAt: new Date()
+      // Obtener favoritos actuales directamente de Firestore (datos frescos)
+      const userDocRef = doc(this.firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (!userDocSnap.exists()) {
+        console.error('Documento de usuario no existe');
+        throw new Error('Usuario no encontrado');
+      }
+
+      const userData = userDocSnap.data();
+      const currentFavorites = userData['profile']?.['favoriteProducts'] || [];
+      
+      console.log('📋 Favoritos actuales antes de agregar:', currentFavorites);
+
+      // Verificar duplicado por si acaso
+      if (currentFavorites.includes(product.id)) {
+        console.log('⚠️ El producto ya está en favoritos (verificación doble)');
+        return false;
+      }
+
+      // Agregar el nuevo producto al array
+      const updatedFavorites = [...currentFavorites, product.id];
+      
+      console.log('📋 Favoritos actualizados después de agregar:', updatedFavorites);
+
+      // Actualizar el documento del usuario
+      await updateDoc(userDocRef, {
+        'profile.favoriteProducts': updatedFavorites
       });
 
       console.log('✅ Producto agregado a favoritos exitosamente');
@@ -127,7 +153,7 @@ export class FavoritesService {
   }
 
   /**
-   * Eliminar producto de favoritos
+   * Eliminar producto de favoritos del documento del usuario
    */
   async removeFromFavorites(productId: string): Promise<boolean> {
     try {
@@ -138,25 +164,35 @@ export class FavoritesService {
 
       console.log('➖ Eliminando de favoritos, productId:', productId);
 
-      // Buscar el documento del favorito
-      const favoritesRef = collection(this.firestore, 'favorites');
-      const q = query(
-        favoritesRef,
-        where('userId', '==', user.uid),
-        where('productId', '==', productId)
-      );
-
-      const querySnapshot = await getDocs(q);
+      // Obtener favoritos actuales directamente de Firestore (datos frescos)
+      const userDocRef = doc(this.firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
       
-      if (querySnapshot.empty) {
-        console.log('No se encontró el favorito para eliminar');
+      if (!userDocSnap.exists()) {
+        console.error('Documento de usuario no existe');
+        throw new Error('Usuario no encontrado');
+      }
+
+      const userData = userDocSnap.data();
+      const currentFavorites = userData['profile']?.['favoriteProducts'] || [];
+      
+      console.log('📋 Favoritos actuales antes de eliminar:', currentFavorites);
+
+      // Verificar si el producto está en favoritos
+      if (!currentFavorites.includes(productId)) {
+        console.log('El producto no está en favoritos');
         return false;
       }
 
-      // Eliminar todos los documentos encontrados (debería ser solo uno)
-      for (const docSnapshot of querySnapshot.docs) {
-        await deleteDoc(doc(this.firestore, 'favorites', docSnapshot.id));
-      }
+      // Filtrar el producto a eliminar
+      const updatedFavorites = currentFavorites.filter((id: string) => id !== productId);
+      
+      console.log('📋 Favoritos actualizados después de eliminar:', updatedFavorites);
+
+      // Actualizar el documento del usuario
+      await updateDoc(userDocRef, {
+        'profile.favoriteProducts': updatedFavorites
+      });
 
       console.log('✅ Producto eliminado de favoritos exitosamente');
       return true;
@@ -223,13 +259,11 @@ export class FavoritesService {
         throw new Error('Debe iniciar sesión para limpiar favoritos');
       }
 
-      const favoritesRef = collection(this.firestore, 'favorites');
-      const q = query(favoritesRef, where('userId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-
-      for (const docSnapshot of querySnapshot.docs) {
-        await deleteDoc(doc(this.firestore, 'favorites', docSnapshot.id));
-      }
+      // Actualizar el documento del usuario con array vacío
+      const userDocRef = doc(this.firestore, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        'profile.favoriteProducts': []
+      });
 
       console.log('✅ Todos los favoritos han sido eliminados');
 

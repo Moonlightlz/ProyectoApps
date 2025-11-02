@@ -139,6 +139,9 @@ export class ProfilePage implements OnInit {
   }
 
   async ngOnInit() {
+    // Cargar favoritos del usuario
+    await this.favoritesService.loadUserFavorites();
+    
     await this.loadUserProfile();
     await this.loadUserStats();
   }
