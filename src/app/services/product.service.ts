@@ -166,17 +166,26 @@ export class ProductService {
           id: data['id'],
           name: data['name'],
           description: data['description'],
+          shortDescription: data['shortDescription'],
           price: data['price'],
           imageUrl: data['imageUrl'],
+          images: data['images'],
           category: data['category'],
+          categoryId: data['categoryId'],
           isAvailable: data['isAvailable'],
+          featured: data['featured'],
+          preparationTime: data['preparationTime'],
+          servingSize: data['servingSize'],
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           createdBy: data['createdBy'],
-          ingredients: data['ingredients'],
-          allergens: data['allergens'],
+          ingredients: data['ingredients'] || [],
+          allergens: data['allergens'] || [],
           nutritionalInfo: data['nutritionalInfo'],
-          variants: data['variants']
+          variants: data['variants'] || [],
+          driveFileId: data['driveFileId'],
+          driveFileIds: data['driveFileIds'],
+          imageSource: data['imageSource']
         } as Product);
       });
       
@@ -307,6 +316,68 @@ export class ProductService {
   }
 
   /**
+   * Obtiene solo los productos marcados como destacados y disponibles.
+   * Estos productos se mostrarán en la página de inicio.
+   * @returns Lista de productos destacados ordenados por fecha de creación
+   */
+  async getFeaturedProducts(): Promise<Product[]> {
+    try {
+      console.log('🔍 Ejecutando query de productos destacados...');
+      const productsRef = collection(this.firestore, 'products');
+      const q = query(
+        productsRef,
+        where('featured', '==', true),
+        where('isAvailable', '==', true),
+        orderBy('createdAt', 'desc')
+      );
+      console.log('📡 Query creada, obteniendo documentos...');
+      const querySnapshot = await getDocs(q);
+      console.log('📊 Documentos obtenidos:', querySnapshot.size);
+      
+      const products: Product[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        products.push({
+          id: data['id'],
+          name: data['name'],
+          description: data['description'],
+          shortDescription: data['shortDescription'],
+          price: data['price'],
+          imageUrl: data['imageUrl'],
+          images: data['images'],
+          category: data['category'],
+          categoryId: data['categoryId'],
+          isAvailable: data['isAvailable'],
+          featured: data['featured'],
+          preparationTime: data['preparationTime'],
+          servingSize: data['servingSize'],
+          createdAt: data['createdAt']?.toDate() || new Date(),
+          updatedAt: data['updatedAt']?.toDate() || new Date(),
+          createdBy: data['createdBy'],
+          ingredients: data['ingredients'] || [],
+          allergens: data['allergens'] || [],
+          nutritionalInfo: data['nutritionalInfo'],
+          variants: data['variants'] || []
+        } as Product);
+      });
+      
+      return products;
+    } catch (error) {
+      console.error('Error obteniendo productos destacados:', error);
+      // Fallback: obtener todos y filtrar manualmente
+      try {
+        const allProducts = await this.getAllProducts();
+        return allProducts
+          .filter(p => p.featured === true && p.isAvailable === true)
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      } catch (fallbackError) {
+        console.error('Error en fallback de productos destacados:', fallbackError);
+        return [];
+      }
+    }
+  }
+
+  /**
    * Obtener productos por categoría
    */
   async getProductsByCategory(categoryId: string): Promise<Product[]> {
@@ -327,17 +398,26 @@ export class ProductService {
           id: data['id'],
           name: data['name'],
           description: data['description'],
+          shortDescription: data['shortDescription'],
           price: data['price'],
           imageUrl: data['imageUrl'],
+          images: data['images'],
           category: data['category'],
+          categoryId: data['categoryId'],
           isAvailable: data['isAvailable'],
+          featured: data['featured'],
+          preparationTime: data['preparationTime'],
+          servingSize: data['servingSize'],
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           createdBy: data['createdBy'],
-          ingredients: data['ingredients'],
-          allergens: data['allergens'],
+          ingredients: data['ingredients'] || [],
+          allergens: data['allergens'] || [],
           nutritionalInfo: data['nutritionalInfo'],
-          variants: data['variants']
+          variants: data['variants'] || [],
+          driveFileId: data['driveFileId'],
+          driveFileIds: data['driveFileIds'],
+          imageSource: data['imageSource']
         } as Product);
       });
       
@@ -362,17 +442,26 @@ export class ProductService {
           id: data['id'],
           name: data['name'],
           description: data['description'],
+          shortDescription: data['shortDescription'],
           price: data['price'],
           imageUrl: data['imageUrl'],
+          images: data['images'],
           category: data['category'],
+          categoryId: data['categoryId'],
           isAvailable: data['isAvailable'],
+          featured: data['featured'],
+          preparationTime: data['preparationTime'],
+          servingSize: data['servingSize'],
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           createdBy: data['createdBy'],
-          ingredients: data['ingredients'],
-          allergens: data['allergens'],
+          ingredients: data['ingredients'] || [],
+          allergens: data['allergens'] || [],
           nutritionalInfo: data['nutritionalInfo'],
-          variants: data['variants']
+          variants: data['variants'] || [],
+          driveFileId: data['driveFileId'],
+          driveFileIds: data['driveFileIds'],
+          imageSource: data['imageSource']
         } as Product;
       }
       
@@ -384,16 +473,36 @@ export class ProductService {
   }
 
   /**
-   * Actualizar producto
+   * Actualiza un producto existente.
+   * Filtra campos undefined para evitar errores de Firestore.
+   * @param productId - ID del producto a actualizar
+   * @param updates - Campos a actualizar
+   * @returns true si se actualizó correctamente
    */
   async updateProduct(productId: string, updates: UpdateProductRequest): Promise<boolean> {
     try {
       const productRef = doc(this.firestore, 'products', productId);
       
-      await updateDoc(productRef, {
-        ...updates,
-        updatedAt: new Date()
+      // Filtrar campos undefined para evitar error de Firestore
+      const cleanUpdates: any = {};
+      Object.keys(updates).forEach(key => {
+        const value = (updates as any)[key];
+        if (value !== undefined) {
+          cleanUpdates[key] = value;
+        }
       });
+      
+      // Log para verificar el valor de featured
+      if ('featured' in updates) {
+        console.log('⭐ Actualizando featured:', updates.featured, '→', cleanUpdates.featured);
+      }
+      
+      // Agregar timestamp de actualización
+      cleanUpdates.updatedAt = new Date();
+      
+      console.log('💾 Actualizando producto:', productId, 'con datos:', cleanUpdates);
+      await updateDoc(productRef, cleanUpdates);
+      console.log('✅ Producto actualizado correctamente');
       
       return true;
     } catch (error) {

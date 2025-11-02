@@ -37,6 +37,75 @@
     </ion-card-content>
   </ion-card>
 
+  <!-- Productos Destacados -->
+  <ion-card class="featured-section">
+    <ion-card-header>
+      <ion-card-title>⭐ Productos Destacados</ion-card-title>
+      <ion-card-subtitle>Lo mejor de nuestra pastelería</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <!-- Loading -->
+      <div *ngIf="loading" style="text-align: center; padding: 20px;">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p style="margin-top: 10px; color: var(--ion-color-medium);">Cargando productos destacados...</p>
+      </div>
+
+      <!-- No hay productos destacados -->
+      <div *ngIf="!loading && featuredProducts.length === 0" style="text-align: center; padding: 20px;">
+        <ion-icon name="star-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
+        <p style="margin-top: 10px; color: var(--ion-color-medium);">
+          No hay productos destacados en este momento.
+        </p>
+        <ion-button routerLink="/tabs/catalog" fill="outline">
+          Ver Catálogo Completo
+        </ion-button>
+      </div>
+
+      <!-- Grid de productos destacados -->
+      <ion-grid *ngIf="!loading && featuredProducts.length > 0">
+        <ion-row>
+          <ion-col size="12" size-md="6" size-lg="4" *ngFor="let product of featuredProducts">
+            <ion-card class="product-card clickable" (click)="openProductDetails(product)">
+              <!-- Imagen del producto -->
+              <div class="product-image-container">
+                <img [src]="product.imageUrl || 'assets/placeholder-product.jpg'" 
+                     [alt]="product.name"
+                     class="product-image">
+                <ion-badge class="featured-badge" color="warning">
+                  <ion-icon name="star"></ion-icon>
+                  Destacado
+                </ion-badge>
+              </div>
+
+              <!-- Contenido del producto -->
+              <ion-card-header>
+                <ion-card-subtitle>{{ product.category ? product.category.name : 'Sin categoría' }}</ion-card-subtitle>
+                <ion-card-title>{{ product.name }}</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <p class="product-description">
+                  {{ product.shortDescription || product.description }}
+                </p>
+                
+                <div class="product-footer">
+                  <div class="price">S/ {{ product.price | number:'1.2-2' }}</div>
+                  <ion-button 
+                    size="small" 
+                    color="primary" 
+                    (click)="addToCart(product, $event)">
+                    <ion-icon name="cart-outline" slot="start"></ion-icon>
+                    Agregar
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
   <!-- Especialidades -->
   <ion-card class="clickable">
     <ion-card-header>
