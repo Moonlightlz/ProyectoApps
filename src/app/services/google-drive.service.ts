@@ -1,3 +1,20 @@
+/**
+ * Servicio de integración con Google Drive API v3.
+ * 
+ * Proporciona funcionalidades para:
+ * - Autenticación OAuth 2.0 con Google Identity Services
+ * - Subida de imágenes con conversión automática a WebP
+ * - Selección de archivos mediante Google Picker
+ * - Gestión de permisos públicos en archivos
+ * - Generación de URLs públicas para visualización de imágenes
+ * 
+ * Configuración requerida:
+ * - Las credenciales (CLIENT_ID y API_KEY) deben configurarse en Google Cloud Console
+ * - Los URIs de redirección deben incluir los dominios de desarrollo y producción
+ * - Ver guía completa en: guias/GoogleDriveSetup.md
+ * 
+ * @author Equipo de desarrollo ProyectoApps
+ */
 import { Injectable } from '@angular/core';
 
 declare const gapi: any;
@@ -25,8 +42,8 @@ export interface StorageInfo {
   providedIn: 'root'
 })
 export class GoogleDriveService {
-  // ✅ Credenciales configuradas de Google Cloud Console
-  // Ver guía: guias/GoogleDriveSetup.md
+  // Credenciales configuradas en Google Cloud Console
+  // Para actualizar estas credenciales, consultar: guias/GoogleDriveSetup.md
   private CLIENT_ID = '134621478329-6cj15n0fevmmv6c2pisrnjtvqr5a8st2.apps.googleusercontent.com';
   private API_KEY = 'AIzaSyDo7sejiP9Wdz99lbc0zeZfFwg6Yu7fSw0';
   
@@ -37,7 +54,7 @@ export class GoogleDriveService {
   private isGapiLoaded = false;
   private productsFolderId: string | null = null;
   
-  // URLs directas de la API (sin Discovery Document)
+  // URL base de la API de Drive (se usa fetch directo en lugar de Discovery Documents)
   private readonly DRIVE_API_URL = 'https://www.googleapis.com/drive/v3';
 
   constructor() {
@@ -45,7 +62,9 @@ export class GoogleDriveService {
   }
 
   /**
-   * Cargar token guardado de localStorage
+   * Carga el token de autenticación almacenado en localStorage.
+   * Restaura la sesión del usuario si el token aún no ha expirado.
+   * También recupera el ID de la carpeta de productos si existe.
    */
   private loadStoredToken() {
     const savedToken = localStorage.getItem('drive_access_token');
@@ -60,7 +79,8 @@ export class GoogleDriveService {
   }
 
   /**
-   * Cargar Google Identity Services (GIS) - Nuevo método
+   * Carga las librerías necesarias de Google para OAuth y Drive API.
+   * Utiliza Google Identity Services para autenticación y gapi para Drive API y Picker.
    */
   private async loadGoogleApi(): Promise<void> {
     if (this.isGapiLoaded) {
@@ -68,15 +88,13 @@ export class GoogleDriveService {
     }
 
     return new Promise((resolve, reject) => {
-      // Cargar Google Identity Services (GSI)
+      // Cargar Google Identity Services (GSI) para OAuth 2.0
       const gsiScript = document.createElement('script');
       gsiScript.src = 'https://accounts.google.com/gsi/client';
       gsiScript.async = true;
       gsiScript.defer = true;
       
       gsiScript.onload = () => {
-        console.log('✅ Google Identity Services cargado');
-        
         // Cargar gapi para Drive API y Picker
         const gapiScript = document.createElement('script');
         gapiScript.src = 'https://apis.google.com/js/api.js';
@@ -84,27 +102,20 @@ export class GoogleDriveService {
         gapiScript.defer = true;
         
         gapiScript.onload = () => {
-          // Cargar client y picker
+          // Cargar módulos client y picker de gapi
           gapi.load('client:picker', {
             callback: async () => {
-              console.log('✅ Google API Client y Picker cargados');
-              
-              // Verificar que picker esté disponible
+              // Verificar disponibilidad del Picker API
               const googleApi = (window as any).google;
-              if (googleApi && googleApi.picker) {
-                console.log('✅ Google Picker API disponible');
-              } else {
-                console.warn('⚠️ Google Picker API no detectado inmediatamente');
+              if (!googleApi || !googleApi.picker) {
+                console.warn('Google Picker API no está disponible');
               }
               
-              // No usar discoveryDocs para evitar error 502
-              // Usaremos fetch directo con la API de Drive
+              // Usar llamadas fetch directas en lugar de discoveryDocs
               this.isGapiLoaded = true;
-              console.log('✅ Listo para autenticar (con Picker API)');
               resolve();
             },
             onerror: () => {
-              console.error('❌ Error inicializando cliente y picker');
               reject(new Error('Error inicializando cliente y picker'));
             }
           });
@@ -120,7 +131,8 @@ export class GoogleDriveService {
   }
 
   /**
-   * Verificar si las credenciales están configuradas
+   * Verifica si las credenciales de Google Cloud están configuradas correctamente.
+   * @returns true si CLIENT_ID y API_KEY están configurados
    */
   isConfigured(): boolean {
     return this.CLIENT_ID !== 'TU_CLIENT_ID.apps.googleusercontent.com' 
@@ -128,39 +140,39 @@ export class GoogleDriveService {
   }
 
   /**
-   * Autenticar con cuenta de Google
+   * Inicia el flujo de autenticación OAuth 2.0 con Google.
+   * Utiliza Google Identity Services para obtener el access token.
+   * @returns true si la autenticación fue exitosa
    */
   async authenticate(): Promise<boolean> {
     try {
       if (!this.isConfigured()) {
-        console.error('⚠️ Google Drive no configurado. Ver guias/GoogleDriveSetup.md');
+        console.error('Google Drive no configurado. Ver guias/GoogleDriveSetup.md');
         return false;
       }
 
-      // Verificar si ya hay token válido
+      // Verificar si ya existe un token válido
       if (this.accessToken && Date.now() < this.tokenExpiry) {
-        console.log('✅ Token de Google Drive válido');
         return true;
       }
 
-      // Cargar APIs con el nuevo sistema
-      console.log('🔄 Cargando Google Identity Services...');
+      // Cargar las librerías de Google
       await this.loadGoogleApi();
 
-      // Usar Google Identity Services (GIS) para autenticación
+      // Iniciar flujo OAuth con Google Identity Services
       return new Promise((resolve) => {
         const tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: this.CLIENT_ID,
           scope: this.SCOPES,
           callback: async (response: any) => {
             if (response.error) {
-              console.error('❌ Error en autenticación:', response);
+              console.error('Error en autenticación:', response);
               alert('Error al autenticar con Google Drive: ' + response.error);
               resolve(false);
               return;
             }
 
-            // Guardar token
+            // Almacenar token y tiempo de expiración
             this.accessToken = response.access_token;
             this.tokenExpiry = Date.now() + (response.expires_in * 1000);
             
@@ -168,23 +180,19 @@ export class GoogleDriveService {
               localStorage.setItem('drive_access_token', this.accessToken);
               localStorage.setItem('drive_token_expiry', this.tokenExpiry.toString());
             }
-
-            console.log('✅ Autenticado con Google Drive correctamente');
             
-            // Crear carpeta de productos
+            // Asegurar que exista la carpeta de productos
             try {
               await this.ensureProductsFolder();
-              console.log('✅ Carpeta de productos lista');
             } catch (error) {
-              console.warn('⚠️ Error creando carpeta:', error);
+              console.warn('Error creando carpeta de productos:', error);
             }
 
             resolve(true);
           },
         });
 
-        // Solicitar token de acceso
-        console.log('🔐 Abriendo ventana de autenticación de Google...');
+        // Abrir ventana de autenticación
         tokenClient.requestAccessToken({ prompt: '' });
       });
 
@@ -195,7 +203,7 @@ export class GoogleDriveService {
   }
 
   /**
-   * Cerrar sesión de Google Drive
+   * Cierra la sesión de Google Drive y limpia los tokens almacenados.
    */
   async signOut(): Promise<void> {
     try {
@@ -208,23 +216,25 @@ export class GoogleDriveService {
       this.tokenExpiry = 0;
       localStorage.removeItem('drive_access_token');
       localStorage.removeItem('drive_token_expiry');
-      
-      console.log('✅ Sesión de Google Drive cerrada');
     } catch (error) {
       console.error('Error cerrando sesión:', error);
     }
   }
 
   /**
-   * Verificar si está autenticado
+   * Verifica si el usuario tiene una sesión activa con Google Drive.
+   * @returns true si existe un token válido no expirado
    */
   isAuthenticated(): boolean {
     return this.accessToken !== null && Date.now() < this.tokenExpiry;
   }
 
   /**
-   * Optimizar imagen a WebP (método público)
-   * Usar antes de subir imágenes para reducir tamaño
+   * Optimiza una imagen convirtiéndola a formato WebP con compresión.
+   * Este método es público y puede ser usado antes de subir imágenes.
+   * @param dataUrl - Imagen en formato data URL (base64)
+   * @param options - Opciones de optimización (calidad, dimensiones máximas)
+   * @returns Promise con la imagen optimizada en formato WebP
    */
   async optimizeImage(dataUrl: string, options?: { quality?: number; maxWidth?: number; maxHeight?: number }): Promise<string> {
     return this.convertToWebP(
@@ -236,7 +246,8 @@ export class GoogleDriveService {
   }
 
   /**
-   * Obtener información de almacenamiento
+   * Obtiene información del espacio de almacenamiento de Google Drive del usuario.
+   * @returns Objeto con límite, uso y espacio disponible en bytes y GB
    */
   async getStorageInfo(): Promise<StorageInfo | null> {
     try {
@@ -268,7 +279,9 @@ export class GoogleDriveService {
   }
 
   /**
-   * Crear carpeta de productos si no existe
+   * Asegura que exista la carpeta de productos en Google Drive.
+   * Si no existe, la crea. Si existe, retorna su ID.
+   * @returns ID de la carpeta de productos
    */
   private async ensureProductsFolder(): Promise<string> {
     try {
@@ -293,24 +306,21 @@ export class GoogleDriveService {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Error HTTP buscando carpeta:', response.status, errorText);
         throw new Error(`Error buscando carpeta: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('📁 Respuesta búsqueda carpeta:', data);
 
+      // Si la carpeta existe, usar su ID
       if (data && data.files && data.files.length > 0) {
         this.productsFolderId = data.files[0].id;
         if (this.productsFolderId) {
           localStorage.setItem('products_folder_id', this.productsFolderId);
         }
-        console.log('✅ Carpeta de productos encontrada:', this.productsFolderId);
         return this.productsFolderId!;
       }
 
-      // Crear nueva carpeta usando fetch directo
+      // Si no existe, crear nueva carpeta
       const folderMetadata = {
         name: FOLDER_NAME,
         mimeType: 'application/vnd.google-apps.folder',
@@ -335,7 +345,6 @@ export class GoogleDriveService {
       if (this.productsFolderId) {
         localStorage.setItem('products_folder_id', this.productsFolderId);
       }
-      console.log('✅ Carpeta de productos creada:', this.productsFolderId);
       
       return this.productsFolderId!;
 
@@ -346,15 +355,15 @@ export class GoogleDriveService {
   }
 
   /**
-   * Abrir selector de Google Drive (Google Picker)
+   * Abre el selector de archivos de Google Drive (Google Picker).
+   * Permite al usuario seleccionar imágenes de su Drive.
+   * @returns Información del archivo seleccionado o null si se cancela
    */
   async openPicker(): Promise<DriveFile | null> {
     return new Promise(async (resolve, reject) => {
       try {
-        // Asegurarse de que Google API esté cargado
         await this.loadGoogleApi();
 
-        // Verificar que google.picker esté disponible
         const googleApi = (window as any).google;
         if (!googleApi || !googleApi.picker) {
           throw new Error('Google Picker API no está cargado. Recarga la página e intenta de nuevo.');
@@ -366,9 +375,7 @@ export class GoogleDriveService {
 
         const folderId = await this.ensureProductsFolder();
 
-        console.log('🎨 Abriendo Google Picker...');
-
-        // Crear Google Picker usando el objeto global
+        // Configurar y mostrar el Google Picker
         const picker = new googleApi.picker.PickerBuilder()
           .setAppId(this.CLIENT_ID.split('.')[0])
           .setOAuthToken(this.accessToken!)
@@ -381,24 +388,17 @@ export class GoogleDriveService {
             new googleApi.picker.DocsView(googleApi.picker.ViewId.DOCS_IMAGES)
               .setMode(googleApi.picker.DocsViewMode.GRID)
           )
-          // API Key comentado temporalmente - el Picker funciona sin él si estás autenticado
-          // .setDeveloperKey(this.API_KEY)
           .setCallback(async (data: any) => {
             if (data.action === googleApi.picker.Action.PICKED) {
               const file = data.docs[0];
-              console.log('✅ Archivo seleccionado:', file);
               
-              // Hacer el archivo público si no lo es
+              // Hacer el archivo público para que pueda visualizarse
               try {
                 await this.makeFilePublic(file.id);
                 
-                // Generar URLs directas (públicas)
-                // Usar formato googleusercontent que funciona mejor para imágenes
+                // Generar URLs usando formato googleusercontent
                 const directLink = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
                 const thumbnailLink = `https://lh3.googleusercontent.com/d/${file.id}=w400`;
-                
-                console.log('🖼️ URL generada (googleusercontent):', directLink);
-                console.log('🔍 Thumbnail:', thumbnailLink);
                 
                 resolve({
                   id: file.id,
@@ -408,8 +408,8 @@ export class GoogleDriveService {
                   webViewLink: directLink
                 });
               } catch (error) {
-                console.error('❌ Error haciendo archivo público:', error);
-                // Intentar usar el archivo de todas formas
+                console.error('Error haciendo archivo público:', error);
+                // Fallback: usar formato alternativo
                 const directLink = `https://drive.google.com/uc?export=view&id=${file.id}`;
                 resolve({
                   id: file.id,
@@ -420,7 +420,6 @@ export class GoogleDriveService {
                 });
               }
             } else if (data.action === googleApi.picker.Action.CANCEL) {
-              console.log('❌ Usuario canceló la selección');
               resolve(null);
             }
           })
@@ -436,7 +435,11 @@ export class GoogleDriveService {
   }
 
   /**
-   * Subir imagen a Google Drive
+   * Sube una imagen a Google Drive con conversión automática a WebP.
+   * La imagen se almacena en la carpeta de productos y se hace pública.
+   * @param dataUrl - Imagen en formato data URL (base64)
+   * @param filename - Nombre del archivo (se cambiará la extensión a .webp)
+   * @returns Información del archivo subido con URLs de acceso público
    */
   async uploadImage(dataUrl: string, filename: string): Promise<DriveFile | null> {
     try {
@@ -446,29 +449,28 @@ export class GoogleDriveService {
 
       const folderId = await this.ensureProductsFolder();
 
-      // 🎨 CONVERSIÓN AUTOMÁTICA A WEBP
-      console.log('🔄 Optimizando imagen a WebP...');
+      // Conversión automática a WebP para optimización
       const optimizedDataUrl = await this.convertToWebP(dataUrl);
       
-      // Cambiar extensión del nombre de archivo a .webp
+      // Actualizar extensión del archivo
       const webpFilename = filename.replace(/\.(jpg|jpeg|png|gif)$/i, '.webp');
 
       // Convertir dataUrl optimizado a Blob
       const blob = this.dataUrlToBlob(optimizedDataUrl);
 
-      // Metadata del archivo
+      // Preparar metadata del archivo
       const metadata = {
         name: webpFilename,
         mimeType: 'image/webp',
         parents: [folderId]
       };
 
-      // Crear FormData para multipart upload
+      // Crear FormData para subida multipart
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', blob);
 
-      // Subir archivo
+      // Ejecutar subida a Drive
       const response = await fetch(
         'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink,webContentLink',
         {
@@ -486,27 +488,22 @@ export class GoogleDriveService {
 
       const fileData = await response.json();
       
-      // Hacer el archivo público para poder visualizarlo
+      // Configurar permisos públicos en el archivo
       try {
         await this.makeFilePublic(fileData.id);
       } catch (error) {
-        console.error('⚠️ Error haciendo archivo público (continuando):', error);
+        console.error('Error haciendo archivo público (continuando):', error);
       }
 
-      // Obtener URL de descarga directa (pública)
-      // Usar formato googleusercontent que funciona mejor para imágenes
+      // Generar URLs de acceso público
       const directLink = `https://lh3.googleusercontent.com/d/${fileData.id}=w2000`;
       const thumbnailLink = `https://lh3.googleusercontent.com/d/${fileData.id}=w400`;
-
-      console.log('✅ Imagen subida a Drive:', fileData.name);
-      console.log('🔗 URL directa (googleusercontent):', directLink);
-      console.log('🔍 Thumbnail:', thumbnailLink);
 
       return {
         id: fileData.id,
         name: fileData.name,
         mimeType: 'image/webp',
-        webViewLink: directLink, // URL que funciona en <img>
+        webViewLink: directLink,
         webContentLink: directLink,
         thumbnailLink: thumbnailLink
       };
@@ -518,12 +515,12 @@ export class GoogleDriveService {
   }
 
   /**
-   * Hacer archivo público para visualización
+   * Configura permisos públicos en un archivo de Drive.
+   * Agrega un delay para permitir la propagación de permisos.
+   * @param fileId - ID del archivo en Google Drive
    */
   private async makeFilePublic(fileId: string): Promise<void> {
     try {
-      console.log('🔓 Haciendo archivo público:', fileId);
-      
       const response = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,
         {
@@ -541,41 +538,44 @@ export class GoogleDriveService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Error haciendo archivo público:', errorData);
+        console.error('Error configurando permisos públicos:', errorData);
         throw new Error('Error haciendo archivo público');
       }
-
-      console.log('✅ Archivo ahora es público');
       
-      // Dar tiempo a que Google Drive propague los permisos
-      // Esto es crítico para que las URLs funcionen inmediatamente
+      // Delay para propagación de permisos en servidores de Google
       await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('⏱️ Permisos propagados');
       
     } catch (error) {
-      console.error('⚠️ No se pudo hacer público el archivo:', error);
+      console.error('No se pudo hacer público el archivo:', error);
       throw error;
     }
   }
 
   /**
-   * Obtener URL directa de visualización
-   * Este formato funciona mejor para archivos públicos
+   * Genera URL directa de visualización para un archivo de Drive.
+   * Utiliza el formato googleusercontent que funciona mejor con tags <img>.
+   * @param fileId - ID del archivo en Google Drive
+   * @returns URL pública de la imagen en tamaño completo (2000px ancho)
    */
   getImageUrl(fileId: string): string {
-    // Usar formato de Google User Content con tamaño completo
     return `https://lh3.googleusercontent.com/d/${fileId}=w2000`;
   }
 
   /**
-   * Obtener URL de thumbnail (formato alternativo)
+   * Genera URL de thumbnail para un archivo de Drive.
+   * @param fileId - ID del archivo en Google Drive
+   * @param size - Ancho del thumbnail en píxeles (default: 400)
+   * @returns URL pública del thumbnail
    */
   getThumbnailUrl(fileId: string, size: number = 400): string {
     return `https://lh3.googleusercontent.com/d/${fileId}=w${size}`;
   }
   
   /**
-   * Obtener URL en formato alternativo (uc?export=view)
+   * Genera URL en formato alternativo (uc?export=view).
+   * Útil como fallback si el formato googleusercontent no funciona.
+   * @param fileId - ID del archivo en Google Drive
+   * @returns URL pública en formato alternativo
    */
   getImageUrlAlternative(fileId: string): string {
     return `https://drive.google.com/uc?export=view&id=${fileId}`;
@@ -608,7 +608,9 @@ export class GoogleDriveService {
   }
 
   /**
-   * Eliminar archivo de Drive
+   * Elimina un archivo de Google Drive.
+   * @param fileId - ID del archivo a eliminar
+   * @returns true si se eliminó exitosamente
    */
   async deleteFile(fileId: string): Promise<boolean> {
     try {
@@ -620,7 +622,6 @@ export class GoogleDriveService {
         fileId: fileId
       });
 
-      console.log('✅ Archivo eliminado de Drive');
       return true;
 
     } catch (error) {
@@ -630,8 +631,14 @@ export class GoogleDriveService {
   }
 
   /**
-   * Convertir imagen a WebP (optimización automática)
-   * Reduce tamaño 25-35% manteniendo calidad
+   * Convierte una imagen a formato WebP con optimización de tamaño y calidad.
+   * Redimensiona la imagen si excede las dimensiones máximas, manteniendo el aspect ratio.
+   * La conversión a WebP típicamente reduce el tamaño en 25-35% manteniendo la calidad visual.
+   * @param dataUrl - Imagen en formato data URL (base64)
+   * @param quality - Calidad de compresión (0.0 - 1.0, default: 0.85)
+   * @param maxWidth - Ancho máximo en píxeles (default: 1920)
+   * @param maxHeight - Alto máximo en píxeles (default: 1080)
+   * @returns Promise con la imagen convertida en formato WebP data URL
    */
   private async convertToWebP(dataUrl: string, quality: number = 0.85, maxWidth: number = 1920, maxHeight: number = 1080): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -662,22 +669,15 @@ export class GoogleDriveService {
         // Dibujar imagen optimizada
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convertir a WebP
+        // Convertir a WebP con la calidad especificada
         const webpDataUrl = canvas.toDataURL('image/webp', quality);
-        
-        // Calcular reducción de tamaño
-        const originalSize = dataUrl.length;
-        const webpSize = webpDataUrl.length;
-        const reduction = ((originalSize - webpSize) / originalSize * 100).toFixed(1);
-        
-        console.log(`📦 Optimización WebP: ${reduction}% más pequeño (${width}x${height})`);
         
         resolve(webpDataUrl);
       };
 
       img.onerror = () => {
-        console.warn('⚠️ Error convirtiendo a WebP, usando original');
-        resolve(dataUrl); // Fallback a imagen original
+        // Fallback: si falla la conversión, usar imagen original
+        resolve(dataUrl);
       };
 
       img.src = dataUrl;
@@ -685,7 +685,10 @@ export class GoogleDriveService {
   }
 
   /**
-   * Convertir dataUrl a Blob
+   * Convierte un data URL (base64) a objeto Blob.
+   * Útil para preparar imágenes para subida con FormData.
+   * @param dataUrl - Imagen en formato data URL (data:image/...;base64,...)
+   * @returns Blob de la imagen con su tipo MIME correcto
    */
   private dataUrlToBlob(dataUrl: string): Blob {
     const arr = dataUrl.split(',');

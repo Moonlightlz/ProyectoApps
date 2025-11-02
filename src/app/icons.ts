@@ -1,4 +1,8 @@
-// Importación centralizada de Ionicons
+/**
+ * Registro centralizado de iconos de Ionicons.
+ * Este archivo debe ser importado y ejecutado en main.ts al iniciar la aplicación.
+ * Registra todos los iconos utilizados en la interfaz para evitar warnings de iconos faltantes.
+ */
 import { addIcons } from 'ionicons';
 import {
   cloudDoneOutline,
@@ -41,7 +45,10 @@ import {
   star
 } from 'ionicons/icons';
 
-// Registrar todos los iconos usados en la aplicación
+/**
+ * Registra todos los iconos de Ionicons utilizados en la aplicación.
+ * Debe ser llamada una vez al inicio de la aplicación (main.ts).
+ */
 export function registerIcons() {
   addIcons({
     'cloud-done-outline': cloudDoneOutline,

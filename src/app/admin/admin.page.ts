@@ -1218,11 +1218,12 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * BOTÓN 1: Seleccionar imagen de Google Drive
+   * Permite al usuario seleccionar una imagen existente de Google Drive.
+   * Utiliza el Google Picker para la selección de archivos.
    */
   async selectFromGoogleDrive() {
     try {
-      // Verificar autenticación
+      // Verificar si el usuario está autenticado con Drive
       if (!this.driveConnected || !this.driveService.isAuthenticated()) {
         const shouldConnect = await this.confirmConnectDrive();
         if (!shouldConnect) return;
@@ -1240,21 +1241,15 @@ export class AdminPage implements OnInit, OnDestroy {
       });
       await loading.present();
 
-      // Abrir selector de Google Drive
       const selectedFile = await this.driveService.openPicker();
       
       await loading.dismiss();
 
       if (selectedFile) {
-        console.log('📁 Archivo seleccionado de Drive:', selectedFile);
-        
-        // Usar la URL que viene del picker (ya usa formato googleusercontent)
+        // Obtener URL pública del archivo seleccionado
         const imageUrl = selectedFile.webViewLink || this.driveService.getImageUrl(selectedFile.id);
         
-        console.log('🖼️ URL final de imagen (googleusercontent):', imageUrl);
-        console.log('🆔 File ID:', selectedFile.id);
-        
-        // Agregar al formulario
+        // Agregar al formulario del producto
         this.addImageToForm(imageUrl);
         this.productForm.driveFileId = selectedFile.id;
         this.productForm.imageSource = 'drive';
@@ -1269,11 +1264,12 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * BOTÓN 2: Subir nueva imagen a Google Drive
+   * Permite al usuario subir una nueva imagen a Google Drive.
+   * Ofrece opciones de cámara o galería.
    */
   async uploadToGoogleDrive() {
     try {
-      // Verificar autenticación
+      // Verificar autenticación con Drive
       if (!this.driveConnected || !this.driveService.isAuthenticated()) {
         const shouldConnect = await this.confirmConnectDrive();
         if (!shouldConnect) return;
@@ -1286,7 +1282,7 @@ export class AdminPage implements OnInit, OnDestroy {
         this.driveConnected = true;
       }
 
-      // Mostrar opciones para capturar/seleccionar foto
+      // Presentar opciones de origen de imagen
       const actionSheet = await this.actionSheetController.create({
         header: 'Subir a Google Drive',
         subHeader: 'Selecciona el origen de la imagen',
@@ -1317,7 +1313,7 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Subir desde cámara → Google Drive
+   * Captura una foto con la cámara y la sube a Google Drive.
    */
   private async uploadFromCameraToDrive() {
     try {
@@ -1338,11 +1334,10 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Subir desde galería → Google Drive
+   * Selecciona una foto de la galería y la sube a Google Drive.
    */
   private async uploadFromGalleryToDrive() {
     try {
-      // Seleccionar foto de galería
       const photoUrl = await this.photoService.takePhoto({ source: 'gallery' });
       
       if (!photoUrl) {
@@ -1359,7 +1354,9 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Función auxiliar para subir foto a Drive
+   * Sube una foto a Google Drive con conversión automática a WebP.
+   * @param photoUrl - URL de la foto en formato data URL
+   * @param source - Origen de la foto ('camera' o 'gallery')
    */
   private async uploadPhotoToDrive(photoUrl: string, source: string) {
     const loading = await this.loadingController.create({
@@ -1372,16 +1369,16 @@ export class AdminPage implements OnInit, OnDestroy {
       const timestamp = Date.now();
       const filename = `product_${timestamp}_${source}.jpg`;
       
-      // Subir a Google Drive
+      // Subir a Google Drive con conversión automática a WebP
       const uploadedFile = await this.driveService.uploadImage(photoUrl, filename);
       
       await loading.dismiss();
 
       if (uploadedFile) {
-        // Obtener URL de visualización
+        // Obtener URL pública de visualización
         const imageUrl = this.driveService.getImageUrl(uploadedFile.id);
         
-        // Agregar al formulario
+        // Agregar imagen al formulario del producto
         this.addImageToForm(imageUrl);
         this.productForm.driveFileId = uploadedFile.id;
         this.productForm.imageSource = 'drive';
@@ -1399,7 +1396,8 @@ export class AdminPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Confirmar conexión a Google Drive
+   * Muestra un diálogo de confirmación para conectar con Google Drive.
+   * @returns Promise<boolean> - true si el usuario acepta, false si cancela
    */
   private async confirmConnectDrive(): Promise<boolean> {
     return new Promise(async (resolve) => {
