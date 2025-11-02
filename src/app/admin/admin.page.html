@@ -439,19 +439,53 @@
             <h3>Ingredientes</h3>
           </div>
           
-          <div class="chips-container">
-            <ion-chip 
-              *ngFor="let ingredient of availableIngredients"
-              [class.selected]="productForm.ingredients.includes(ingredient)"
-              (click)="toggleIngredient(ingredient)">
-              <ion-label>{{ingredient}}</ion-label>
-              <ion-icon 
-                *ngIf="productForm.ingredients.includes(ingredient)" 
-                name="checkmark" 
-                slot="end">
-              </ion-icon>
-            </ion-chip>
+          <!-- Agregar nuevo ingrediente -->
+          <div class="add-item-container">
+            <div class="input-button-wrapper">
+              <ion-input 
+                [(ngModel)]="newIngredient"
+                placeholder="Agregar nuevo ingrediente..."
+                type="text"
+                (keyup.enter)="addNewIngredient()"
+                (ionInput)="newIngredient = $any($event.target).value"
+                class="custom-input">
+              </ion-input>
+              <ion-button 
+                fill="solid" 
+                color="success"
+                class="add-btn"
+                (click)="addNewIngredient()">
+                <ion-icon name="add" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
           </div>
+          
+          <!-- Lista de ingredientes con botones -->
+          <div class="items-list">
+            <div 
+              *ngFor="let ingredient of availableIngredients" 
+              class="item-row"
+              [class.selected]="productForm.ingredients.includes(ingredient)">
+              <div class="item-content" (click)="toggleIngredient(ingredient)">
+                <ion-icon 
+                  *ngIf="productForm.ingredients.includes(ingredient)" 
+                  name="checkmark-circle" 
+                  color="success"
+                  class="check-icon">
+                </ion-icon>
+                <ion-label>{{ingredient}}</ion-label>
+              </div>
+              <ion-button 
+                fill="solid" 
+                color="danger" 
+                size="small"
+                class="delete-btn"
+                (click)="removeIngredientFromList(ingredient)">
+                <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <p class="helper-text">💡 Clic en el nombre para seleccionar, botón - para eliminar de la lista</p>
         </div>
 
         <!-- Alérgenos -->
@@ -460,20 +494,53 @@
             <h3>Alérgenos</h3>
           </div>
           
-          <div class="chips-container">
-            <ion-chip 
-              *ngFor="let allergen of availableAllergens"
-              [class.selected]="productForm.allergens.includes(allergen)"
-              (click)="toggleAllergen(allergen)"
-              color="warning">
-              <ion-label>{{allergen}}</ion-label>
-              <ion-icon 
-                *ngIf="productForm.allergens.includes(allergen)" 
-                name="checkmark" 
-                slot="end">
-              </ion-icon>
-            </ion-chip>
+          <!-- Agregar nuevo alérgeno -->
+          <div class="add-item-container">
+            <div class="input-button-wrapper">
+              <ion-input 
+                [(ngModel)]="newAllergen"
+                placeholder="Agregar nuevo alérgeno..."
+                type="text"
+                (keyup.enter)="addNewAllergen()"
+                (ionInput)="newAllergen = $any($event.target).value"
+                class="custom-input">
+              </ion-input>
+              <ion-button 
+                fill="solid" 
+                color="warning"
+                class="add-btn"
+                (click)="addNewAllergen()">
+                <ion-icon name="add" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
           </div>
+          
+          <!-- Lista de alérgenos con botones -->
+          <div class="items-list allergens-list">
+            <div 
+              *ngFor="let allergen of availableAllergens" 
+              class="item-row"
+              [class.selected]="productForm.allergens.includes(allergen)">
+              <div class="item-content" (click)="toggleAllergen(allergen)">
+                <ion-icon 
+                  *ngIf="productForm.allergens.includes(allergen)" 
+                  name="checkmark-circle" 
+                  color="warning"
+                  class="check-icon">
+                </ion-icon>
+                <ion-label>{{allergen}}</ion-label>
+              </div>
+              <ion-button 
+                fill="solid" 
+                color="danger" 
+                size="small"
+                class="delete-btn"
+                (click)="removeAllergenFromList(allergen)">
+                <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <p class="helper-text">💡 Clic en el nombre para seleccionar, botón - para eliminar de la lista</p>
         </div>
 
         <!-- Información nutricional -->

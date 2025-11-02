@@ -9,6 +9,7 @@ import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { PhotoService } from '../services/photo';
 import { GoogleDriveService } from '../services/google-drive.service';
+import { IngredientsAllergensService } from '../services/ingredients-allergens.service';
 import { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
 
 @Component({
@@ -65,15 +66,13 @@ export class AdminPage implements OnInit, OnDestroy {
   driveConnected = false;
   driveStorageInfo: any = null;
   
-  // Ingredientes y alérgenos disponibles
-  availableIngredients = [
-    'Harina', 'Azúcar', 'Huevos', 'Mantequilla', 'Leche', 'Chocolate', 'Vainilla', 
-    'Fresas', 'Crema', 'Coco', 'Almendras', 'Nueces', 'Canela', 'Miel'
-  ];
-  
-  availableAllergens = [
-    'Gluten', 'Lácteos', 'Huevos', 'Frutos secos', 'Soja', 'Pescado', 'Mariscos'
-  ];
+  // Ingredientes y alérgenos disponibles (cargados desde Firestore)
+  availableIngredients: string[] = [];
+  availableAllergens: string[] = [];
+
+  // Variables para agregar nuevos elementos
+  newIngredient = '';
+  newAllergen = '';
   
   private subscriptions: Subscription[] = [];
 
@@ -83,6 +82,7 @@ export class AdminPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private photoService: PhotoService,
     private driveService: GoogleDriveService,
+    private ingredientsAllergensService: IngredientsAllergensService,
     private router: Router,
     private loadingController: LoadingController,
     private alertController: AlertController,
@@ -161,11 +161,16 @@ export class AdminPage implements OnInit, OnDestroy {
       this.categories = [];
       this.filteredProducts = [];
       
-      // Cargar productos y categorías en paralelo
-      const [products, categories] = await Promise.all([
+      // Cargar productos, categorías, ingredientes y alérgenos en paralelo
+      const [products, categories, ingredientsAllergens] = await Promise.all([
         this.productService.getAllProducts(),
-        this.productService.getCategories()
+        this.productService.getCategories(),
+        this.ingredientsAllergensService.getAll()
       ]);
+
+      // Cargar ingredientes y alérgenos
+      this.availableIngredients = ingredientsAllergens.ingredients;
+      this.availableAllergens = ingredientsAllergens.allergens;
 
       this.products = products || [];
       
@@ -531,6 +536,224 @@ export class AdminPage implements OnInit, OnDestroy {
     } else {
       this.productForm.allergens.push(allergen);
     }
+  }
+
+  // Agregar nuevo ingrediente personalizado
+  async addNewIngredient() {
+    console.log('addNewIngredient llamado, valor:', this.newIngredient);
+    
+    // Verificar si existe y hacer trim
+    if (!this.newIngredient) {
+      await this.showToast('Por favor ingresa un ingrediente', 'warning');
+      return;
+    }
+    
+    const trimmed = this.newIngredient.trim();
+    
+    if (!trimmed || trimmed.length === 0) {
+      await this.showToast('Por favor ingresa un ingrediente válido', 'warning');
+      this.newIngredient = '';
+      return;
+    }
+
+    // Capitalizar primera letra
+    const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    
+    // Mostrar loading
+    const loading = await this.loadingController.create({
+      message: 'Guardando ingrediente...'
+    });
+    await loading.present();
+
+    try {
+      // Guardar en Firestore
+      const result = await this.ingredientsAllergensService.addIngredient(capitalized);
+      
+      await loading.dismiss();
+
+      if (result.success) {
+        // Actualizar lista local
+        this.availableIngredients.push(capitalized);
+        this.availableIngredients.sort();
+        
+        // Seleccionar automáticamente el nuevo ingrediente
+        this.productForm.ingredients.push(capitalized);
+        
+        await this.showToast(`Ingrediente "${capitalized}" agregado`, 'success');
+        
+        // Limpiar el campo
+        this.newIngredient = '';
+      } else {
+        await this.showToast(result.error || 'Error al agregar ingrediente', 'danger');
+      }
+    } catch (error) {
+      await loading.dismiss();
+      await this.showToast('Error al guardar en la base de datos', 'danger');
+      console.error('Error en addNewIngredient:', error);
+    }
+  }
+
+  // Agregar nuevo alérgeno personalizado
+  async addNewAllergen() {
+    console.log('addNewAllergen llamado, valor:', this.newAllergen);
+    
+    // Verificar si existe y hacer trim
+    if (!this.newAllergen) {
+      await this.showToast('Por favor ingresa un alérgeno', 'warning');
+      return;
+    }
+    
+    const trimmed = this.newAllergen.trim();
+    
+    if (!trimmed || trimmed.length === 0) {
+      await this.showToast('Por favor ingresa un alérgeno válido', 'warning');
+      this.newAllergen = '';
+      return;
+    }
+
+    // Capitalizar primera letra
+    const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    
+    // Mostrar loading
+    const loading = await this.loadingController.create({
+      message: 'Guardando alérgeno...'
+    });
+    await loading.present();
+
+    try {
+      // Guardar en Firestore
+      const result = await this.ingredientsAllergensService.addAllergen(capitalized);
+      
+      await loading.dismiss();
+
+      if (result.success) {
+        // Actualizar lista local
+        this.availableAllergens.push(capitalized);
+        this.availableAllergens.sort();
+        
+        // Seleccionar automáticamente el nuevo alérgeno
+        this.productForm.allergens.push(capitalized);
+        
+        await this.showToast(`Alérgeno "${capitalized}" agregado`, 'success');
+        
+        // Limpiar el campo
+        this.newAllergen = '';
+      } else {
+        await this.showToast(result.error || 'Error al agregar alérgeno', 'danger');
+      }
+    } catch (error) {
+      await loading.dismiss();
+      await this.showToast('Error al guardar en la base de datos', 'danger');
+      console.error('Error en addNewAllergen:', error);
+    }
+  }
+
+  // Eliminar ingrediente de la lista de disponibles (eliminación real)
+  async removeIngredientFromList(ingredient: string) {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Ingrediente',
+      message: `¿Estás seguro de eliminar permanentemente "${ingredient}" de la base de datos? Esta acción no se puede deshacer.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: async () => {
+            // Mostrar loading
+            const loading = await this.loadingController.create({
+              message: 'Eliminando ingrediente...'
+            });
+            await loading.present();
+
+            try {
+              // Eliminar de Firestore
+              const result = await this.ingredientsAllergensService.deleteIngredient(ingredient);
+              
+              await loading.dismiss();
+
+              if (result.success) {
+                // Eliminar de la lista local
+                const index = this.availableIngredients.indexOf(ingredient);
+                if (index > -1) {
+                  this.availableIngredients.splice(index, 1);
+                }
+                
+                // También removerlo del producto actual si está seleccionado
+                const prodIndex = this.productForm.ingredients.indexOf(ingredient);
+                if (prodIndex > -1) {
+                  this.productForm.ingredients.splice(prodIndex, 1);
+                }
+                
+                await this.showToast(`Ingrediente "${ingredient}" eliminado permanentemente`, 'success');
+              } else {
+                await this.showToast(result.error || 'Error al eliminar ingrediente', 'danger');
+              }
+            } catch (error) {
+              await loading.dismiss();
+              await this.showToast('Error al eliminar de la base de datos', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // Eliminar alérgeno de la lista de disponibles (eliminación real)
+  async removeAllergenFromList(allergen: string) {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Alérgeno',
+      message: `¿Estás seguro de eliminar permanentemente "${allergen}" de la base de datos? Esta acción no se puede deshacer.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: async () => {
+            // Mostrar loading
+            const loading = await this.loadingController.create({
+              message: 'Eliminando alérgeno...'
+            });
+            await loading.present();
+
+            try {
+              // Eliminar de Firestore
+              const result = await this.ingredientsAllergensService.deleteAllergen(allergen);
+              
+              await loading.dismiss();
+
+              if (result.success) {
+                // Eliminar de la lista local
+                const index = this.availableAllergens.indexOf(allergen);
+                if (index > -1) {
+                  this.availableAllergens.splice(index, 1);
+                }
+                
+                // También removerlo del producto actual si está seleccionado
+                const prodIndex = this.productForm.allergens.indexOf(allergen);
+                if (prodIndex > -1) {
+                  this.productForm.allergens.splice(prodIndex, 1);
+                }
+                
+                await this.showToast(`Alérgeno "${allergen}" eliminado permanentemente`, 'success');
+              } else {
+                await this.showToast(result.error || 'Error al eliminar alérgeno', 'danger');
+              }
+            } catch (error) {
+              await loading.dismiss();
+              await this.showToast('Error al eliminar de la base de datos', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   // Navegación
