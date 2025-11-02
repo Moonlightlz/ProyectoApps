@@ -12,6 +12,7 @@ import {
   IonCardSubtitle,
   IonCardContent
 } from '@ionic/angular/standalone';
+import { IonButton } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-chat',
@@ -28,11 +29,16 @@ import {
     IonCardTitle,
     IonCardSubtitle,
     IonCardContent,
+    IonButton,
     CommonModule, 
     FormsModule
   ]
 })
 export class ChatPage implements OnInit {
+
+  // Placeholder: mostrar el botón sólo para usuarios.
+  // Nota: conectar esto con el servicio de usuario/estado real cuando se implemente la lógica de roles.
+  public isUser: boolean = true;
 
   constructor() { }
 

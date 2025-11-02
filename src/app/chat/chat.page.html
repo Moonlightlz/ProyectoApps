@@ -19,5 +19,11 @@
     <ion-card-content>
       <p>Envía mensajes y fotos para comunicarte con nuestro equipo.</p>
     </ion-card-content>
+      <!-- Botón visible sólo para el rol de usuario (diseño únicamente, sin funcionalidad) -->
+      <ion-card-content class="chat-actions">
+        <ion-button expand="block" color="primary" class="start-custom-order-btn" *ngIf="isUser">
+          Iniciar Pedido Personalizado
+        </ion-button>
+      </ion-card-content>
   </ion-card>
 </ion-content>

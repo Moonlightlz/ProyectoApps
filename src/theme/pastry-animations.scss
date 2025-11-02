@@ -1,40 +1,63 @@
-/* Animaciones y estilos globales para Pastelería D'Diego */
+/* ===========================================================
+   🎂 Pastelería D'Diego – Estilos Globales + Animaciones
+   Paleta cálida (naranja, dorado, crema)
+   =========================================================== */
+
+/* ===== PALETA DE COLORES PERSONALIZADA ===== */
+:root {
+  /* Colores principales */
+  --ion-color-primary: #FFA500; /* Naranja vibrante */
+  --ion-color-primary-rgb: 255, 165, 0;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e69500;
+  --ion-color-primary-tint: #ffb733;
+
+  --ion-color-secondary: #FFD54F; /* Amarillo pastel */
+  --ion-color-secondary-rgb: 255, 213, 79;
+  --ion-color-secondary-contrast: #4a2c2a;
+  --ion-color-secondary-contrast-rgb: 74, 44, 42;
+  --ion-color-secondary-shade: #e6bf45;
+  --ion-color-secondary-tint: #ffe176;
+
+  --ion-color-tertiary: #FFB74D; /* Naranja suave */
+  --ion-color-tertiary-rgb: 255, 183, 77;
+  --ion-color-tertiary-contrast: #4a2c2a;
+  --ion-color-tertiary-contrast-rgb: 74, 44, 42;
+  --ion-color-tertiary-shade: #e6a043;
+  --ion-color-tertiary-tint: #ffc46e;
+
+  --ion-color-light: #FFF8E1;
+  --ion-color-light-rgb: 255, 248, 225;
+  --ion-color-light-contrast: #4a2c2a;
+
+  --ion-color-dark: #F4F4F4;
+  --ion-color-dark-rgb: 244, 244, 244;
+  --ion-color-dark-contrast: #4a2c2a;
+
+  --ion-text-color: #4a2c2a;
+  --ion-background-color: #fdfbf7;
+
+  --ion-box-shadow: 0 4px 12px rgba(255, 165, 0, 0.15);
+  --ion-box-shadow-hover: 0 6px 18px rgba(255, 165, 0, 0.25);
+}
 
 /* ===== ANIMACIONES GLOBALES ===== */
-
-/* Animación de entrada suave para cards */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Animación de pulsación suave para botones */
 @keyframes gentlePulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
-/* Animación de rotación suave para iconos */
 @keyframes softRotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Animación de shake suave para notificaciones */
 @keyframes softShake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-2px); }
@@ -42,13 +65,11 @@
 }
 
 /* ===== ESTILOS GLOBALES ===== */
-
-/* Transiciones suaves para todos los elementos */
 * {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Estilo mejorado para cards */
+/* ---- Cards ---- */
 ion-card {
   border-radius: 16px !important;
   box-shadow: var(--ion-box-shadow) !important;
@@ -57,42 +78,34 @@ ion-card {
   background: var(--ion-color-light);
   color: var(--ion-text-color) !important;
 }
-
 ion-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--ion-box-shadow-hover) !important;
 }
 
-/* Estilo mejorado para botones */
+/* ---- Botones ---- */
 ion-button {
   --border-radius: 12px;
-  font-weight: 500; /* Reducido de 600 a 500 para un look menos pesado */
+  font-weight: 500;
   text-transform: none;
 }
-
 ion-button:not([fill="clear"]):hover {
   animation: gentlePulse 0.6s ease-in-out;
 }
-
-/* Botones primarios con gradiente */
 ion-button[color="primary"] {
   --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
 }
-
 ion-button[color="tertiary"],
 ion-fab-button[color="tertiary"] {
-  /* degradado cálido entre naranja y amarillo suave */
   --background: linear-gradient(135deg, #FFA500 0%, #FFD54F 100%);
-  --color: #ffffff; /* texto blanco */
+  --color: #ffffff;
 }
 
-
-/* Botones con efecto de ondas */
+/* Efecto de onda en botones */
 ion-button::part(native) {
   overflow: hidden;
   position: relative;
 }
-
 ion-button::part(native)::before {
   content: '';
   position: absolute;
@@ -105,84 +118,69 @@ ion-button::part(native)::before {
   transform: translate(-50%, -50%);
   transition: width 0.6s, height 0.6s;
 }
-
 ion-button:active::part(native)::before {
   width: 300px;
   height: 300px;
 }
 
-/* Estilo mejorado para headers */
+/* ---- Header ---- */
 ion-header {
   background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
 }
-
 ion-header ion-toolbar {
   --background: transparent;
   --color: white;
-  /* Aumentamos la altura del header con padding vertical */
   --padding-top: 20px;
   --padding-bottom: 20px;
 }
-
 ion-title {
-  font-family: 'Nano', sans-serif; /* Aplicamos la nueva fuente */
-  font-size: 1.6rem; /* Hacemos el título más grande */
-  letter-spacing: 1px; /* Añadimos un ligero espaciado para mejorar la legibilidad */
-  text-align: center; /* Centramos el título */
-  font-weight: 600; /* Reducido de 700 a 600 para un título elegante pero no tan grueso */
+  font-family: 'Nano', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+  text-align: center;
+  font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   color: white !important;
 }
 
-/* Estilo mejorado para tabs */
+/* ---- Tabs ---- */
 ion-tab-bar {
   border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.1);
   background: var(--ion-color-light, #fcf8f3);
   backdrop-filter: blur(10px);
 }
-
 ion-tab-button {
   --color: var(--ion-color-medium, #8d7b79);
   --color-selected: var(--ion-color-primary);
   transition: all 0.3s ease;
-  font-weight: 600; /* Reducido de 700 a 600 */
-  
-  ion-label {
-    color: inherit !important;
-    font-weight: inherit !important;
-  }
+  font-weight: 600;
 }
-
 ion-tab-button:hover {
   transform: translateY(-2px);
 }
-
 ion-tab-button.tab-selected {
   animation: gentlePulse 0.8s ease-in-out;
 }
 
-/* Iconos con animación */
+/* ---- Iconos ---- */
 ion-icon {
   transition: all 0.3s ease;
 }
-
 ion-icon:hover {
   transform: scale(1.1);
 }
-
-/* Animación especial para iconos de comida */
 ion-icon[name*="restaurant"],
 ion-icon[name*="cafe"] {
   animation: softRotate 8s linear infinite;
 }
 
-/* Estilo mejorado para inputs */
+/* ---- Inputs ---- */
 ion-input {
   --border-radius: 12px;
   --padding: 16px;
 }
 
-/* Estilo mejorado para items, especialmente en listas de perfil */
+/* ---- Items ---- */
 ion-item {
   --border-radius: 12px;
   --background: transparent;
@@ -191,59 +189,52 @@ ion-item {
   --padding-start: 16px;
   margin-bottom: 8px;
 }
-
 ion-item.item-interactive {
   --background: rgba(255, 255, 255, 0.8);
 }
-
 ion-item:hover {
   --background: rgba(255, 255, 255, 0.9);
   transform: translateX(4px);
 }
 
-/* Lista con animaciones escalonadas */
+/* ---- Listas y grid ---- */
 ion-list ion-item {
   --background: white;
   animation: fadeInUp 0.6s ease-out;
 }
-
 ion-list ion-item:nth-child(1) { animation-delay: 0.1s; }
 ion-list ion-item:nth-child(2) { animation-delay: 0.2s; }
 ion-list ion-item:nth-child(3) { animation-delay: 0.3s; }
 ion-list ion-item:nth-child(4) { animation-delay: 0.4s; }
 ion-list ion-item:nth-child(5) { animation-delay: 0.5s; }
 
-/* Grid con animación */
 ion-grid ion-col {
   animation: fadeInUp 0.6s ease-out;
 }
-
 ion-grid ion-col:nth-child(even) {
   animation-delay: 0.2s;
 }
 
-/* Estilo para contenido principal */
+/* ---- Contenido principal ---- */
 ion-content {
   --background: var(--ion-background-color, #fdfbf7);
   --color: var(--ion-text-color, #4a2c2a) !important;
 }
 
-/* Mejorar contraste en textos */
+/* ---- Tipografía ---- */
 ion-label, ion-card-title, ion-card-subtitle, ion-item, p, h1, h2, h3, h4, h5, h6 {
   color: var(--ion-text-color, #5e3835) !important;
-  font-weight: 400; /* Reducido a normal (400) para el texto general */
+  font-weight: 400;
 }
-
 ion-card-title {
-  font-weight: 600 !important; /* Reducido de 700 a 600 */
+  font-weight: 600 !important;
 }
-
 ion-card-subtitle {
   color: var(--ion-color-medium, #8d7b79) !important;
-  font-weight: 500 !important; /* Reducido de 600 a 500 */
+  font-weight: 500 !important;
 }
 
-/* Loading con animación personalizada */
+/* ---- Loading Spinner ---- */
 .loading-spinner {
   display: inline-block;
   width: 20px;
@@ -254,64 +245,52 @@ ion-card-subtitle {
   animation: softRotate 1s linear infinite;
 }
 
-/* Efecto hover para elementos clicables */
+/* ---- Elementos clicables ---- */
 .clickable {
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .clickable:hover {
   transform: scale(1.02);
   filter: brightness(1.05);
 }
-
 .clickable:active {
   transform: scale(0.98);
 }
 
-/* Estilo para badges/chips */
+/* ---- Chips / Badges ---- */
 ion-chip {
   --background: var(--ion-color-secondary);
-  --color: var(--ion-color-dark);
+  --color: var(--ion-color-secondary-contrast);
   border-radius: 20px;
-  font-weight: 500; /* Reducido de 600 a 500 */
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(255, 165, 0, 0.2);
 }
 
-/* Animación de entrada para modals */
+/* ---- Modals ---- */
 ion-modal {
   --backdrop-opacity: 0.6;
 }
-
 ion-modal ion-content {
   animation: fadeInUp 0.4s ease-out;
 }
 
-/* Estilo para alertas/toasts */
+/* ---- Toasts / Alertas ---- */
 ion-toast {
   --border-radius: 12px;
   --box-shadow: 0 8px 32px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 
-/* Responsive - animaciones más suaves en dispositivos móviles */
+/* ---- Responsive ---- */
 @media (max-width: 768px) {
-  * {
-    transition-duration: 0.2s;
-  }
-  
-  ion-card:hover {
-    transform: translateY(-2px);
-  }
-  
-  .clickable:hover {
-    transform: scale(1.01);
-  }
+  * { transition-duration: 0.2s; }
+  ion-card:hover { transform: translateY(-2px); }
+  .clickable:hover { transform: scale(1.01); }
 }
 
-/* Accesibilidad - respeta las preferencias de movimiento reducido */
+/* ---- Accesibilidad ---- */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
