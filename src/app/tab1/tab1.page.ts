@@ -19,7 +19,8 @@ import {
   IonIcon,
   IonSpinner,
   IonBadge,
-  ModalController
+  ModalController,
+  ViewWillEnter
 } from '@ionic/angular/standalone';
 
 import { CommonModule } from '@angular/common';
@@ -41,7 +42,7 @@ import { ProductDetailsModalComponent } from '../components/product-details-moda
     CommonModule, RouterModule
   ],
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, ViewWillEnter {
   featuredProducts: Product[] = [];
   loading = false;
 
@@ -52,6 +53,14 @@ export class Tab1Page implements OnInit {
   ) {}
 
   ngOnInit() {
+    // La carga inicial se hace en ionViewWillEnter
+  }
+
+  /**
+   * Se ejecuta cada vez que se va a mostrar la página.
+   * Esto asegura que los productos destacados se actualicen cuando vuelvas a la pestaña.
+   */
+  ionViewWillEnter() {
     this.loadFeaturedProducts();
   }
 
@@ -61,9 +70,12 @@ export class Tab1Page implements OnInit {
   async loadFeaturedProducts() {
     this.loading = true;
     try {
+      console.log('🔍 Cargando productos destacados...');
       this.featuredProducts = await this.productService.getFeaturedProducts();
+      console.log('✅ Productos destacados cargados:', this.featuredProducts.length);
+      console.log('📦 Productos:', this.featuredProducts);
     } catch (error) {
-      console.error('Error cargando productos destacados:', error);
+      console.error('❌ Error cargando productos destacados:', error);
     } finally {
       this.loading = false;
     }

@@ -322,6 +322,7 @@ export class ProductService {
    */
   async getFeaturedProducts(): Promise<Product[]> {
     try {
+      console.log('🔍 Ejecutando query de productos destacados...');
       const productsRef = collection(this.firestore, 'products');
       const q = query(
         productsRef,
@@ -329,7 +330,9 @@ export class ProductService {
         where('isAvailable', '==', true),
         orderBy('createdAt', 'desc')
       );
+      console.log('📡 Query creada, obteniendo documentos...');
       const querySnapshot = await getDocs(q);
+      console.log('📊 Documentos obtenidos:', querySnapshot.size);
       
       const products: Product[] = [];
       querySnapshot.forEach((doc) => {
@@ -489,10 +492,17 @@ export class ProductService {
         }
       });
       
+      // Log para verificar el valor de featured
+      if ('featured' in updates) {
+        console.log('⭐ Actualizando featured:', updates.featured, '→', cleanUpdates.featured);
+      }
+      
       // Agregar timestamp de actualización
       cleanUpdates.updatedAt = new Date();
       
+      console.log('💾 Actualizando producto:', productId, 'con datos:', cleanUpdates);
       await updateDoc(productRef, cleanUpdates);
+      console.log('✅ Producto actualizado correctamente');
       
       return true;
     } catch (error) {

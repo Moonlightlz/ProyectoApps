@@ -79,7 +79,7 @@
 
               <!-- Contenido del producto -->
               <ion-card-header>
-                <ion-card-subtitle>{{ product.category?.name || 'Sin categoría' }}</ion-card-subtitle>
+                <ion-card-subtitle>{{ product.category ? product.category.name : 'Sin categoría' }}</ion-card-subtitle>
                 <ion-card-title>{{ product.name }}</ion-card-title>
               </ion-card-header>
 
