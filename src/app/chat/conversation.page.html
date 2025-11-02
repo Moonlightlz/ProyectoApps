@@ -1,0 +1,41 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/chat" text="Regresar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Chat con Administrador</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Conversación</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="chat-container">
+    <div class="messages">
+      <div *ngFor="let m of messages" 
+           [ngClass]="{'message': true, 'message-admin': !isCurrentUser(m.senderId), 'message-user': isCurrentUser(m.senderId)}">
+        <div class="message-content">
+          <div class="message-text">{{ m.text }}</div>
+          <div class="message-meta">
+            <span class="message-time">{{ formatDate(m.createdAt) }}</span>
+            <span class="message-seen" *ngIf="m.seenByAdmin && isCurrentUser(m.senderId)">
+              <ion-icon name="checkmark-done-outline"></ion-icon>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="message-input">
+    <ion-input [(ngModel)]="newMessageText" placeholder="Escribe un mensaje..." 
+              (keyup.enter)="sendMessage()" class="custom-input"></ion-input>
+    <ion-button (click)="sendMessage()" class="send-button">
+      <ion-icon name="send"></ion-icon>
+    </ion-button>
+  </div>
+</ion-content>
