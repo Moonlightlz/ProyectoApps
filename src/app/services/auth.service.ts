@@ -46,6 +46,8 @@ export class AuthService {
         // Simular login exitoso para credenciales de prueba
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('username', this.TEST_CREDENTIALS.username); // Guardar 'admin', no el email
+        // Limpiar userEmail de Firebase si existe
+        localStorage.removeItem('userEmail');
         console.log('AuthService: Login demo exitoso, guardando username =', this.TEST_CREDENTIALS.username);
         return { success: true, user: null, isDemo: true };
       }
@@ -53,6 +55,8 @@ export class AuthService {
       const result = await signInWithEmailAndPassword(this.auth, email, password);
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', email);
+      // Limpiar username de admin si existe
+      localStorage.removeItem('username');
       return { success: true, user: result.user, isDemo: false };
     } catch (error: any) {
       return { success: false, error: this.getErrorMessage(error.code) };
