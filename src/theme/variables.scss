@@ -1,109 +1,122 @@
-// Tema Pastelería D'Diego - Colores cálidos y pasteles
-// Inspirado en colores de repostería y dulces
+// Tema "Menta y Melocotón" para Pastelería D'Diego
+// Paleta de colores fresca, cálida y apetitosa.
+
+/* Definición de la fuente personalizada "Nano" */
+@font-face {
+  font-family: 'Nano';
+  /* Asegúrate de que el nombre del archivo coincida con el que tienes */
+  src: url('/assets/fonts/Nano.woff2') format('woff2'); 
+  font-weight: normal;
+  font-style: normal;
+}
 
 /** Ionic CSS Variables **/
 :root {
-  // Colores principales de la pastelería
-  --ion-color-primary: #ff6b9d;         // Rosa pastel (como betún de fresa)
-  --ion-color-primary-rgb: 255,107,157;
+  /** primary (Melocotón Suave) **/
+  --ion-color-primary: #ffb38a;
+  --ion-color-primary-rgb: 255, 179, 138;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255,255,255;
-  --ion-color-primary-shade: #e05e8a;
-  --ion-color-primary-tint: #ff7aa7;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #e09d79;
+  --ion-color-primary-tint: #ffba95;
 
-  --ion-color-secondary: #ffbe0b;       // Amarillo dorado (como miel)
-  --ion-color-secondary-rgb: 255,190,11;
+  /** secondary (Menta Fresca) **/
+  --ion-color-secondary: #a0d8b3;
+  --ion-color-secondary-rgb: 160, 216, 179;
   --ion-color-secondary-contrast: #000000;
-  --ion-color-secondary-contrast-rgb: 0,0,0;
-  --ion-color-secondary-shade: #e0a70a;
-  --ion-color-secondary-tint: #ffc524;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #8dbd9d;
+  --ion-color-secondary-tint: #aadbb9;
 
-  --ion-color-tertiary: #8ecae6;        // Azul pastel (como glaseado)
-  --ion-color-tertiary-rgb: 142,202,230;
+  /** tertiary (Café con Leche) **/
+  --ion-color-tertiary: #c4a385;
+  --ion-color-tertiary-rgb: 196, 163, 133;
   --ion-color-tertiary-contrast: #000000;
-  --ion-color-tertiary-contrast-rgb: 0,0,0;
-  --ion-color-tertiary-shade: #7db2ca;
-  --ion-color-tertiary-tint: #9acfe9;
+  --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+  --ion-color-tertiary-shade: #ac8f74;
+  --ion-color-tertiary-tint: #caab90;
 
-  --ion-color-success: #2dd36f;         // Verde menta
-  --ion-color-success-rgb: 45,211,111;
+  /** success **/
+  --ion-color-success: #2dd36f;
+  --ion-color-success-rgb: 45, 211, 111;
   --ion-color-success-contrast: #ffffff;
-  --ion-color-success-contrast-rgb: 255,255,255;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
   --ion-color-success-shade: #28ba62;
   --ion-color-success-tint: #42d77d;
 
-  --ion-color-warning: #ffc947;         // Naranja crema
-  --ion-color-warning-rgb: 255,201,71;
+  /** warning **/
+  --ion-color-warning: #ffc409;
+  --ion-color-warning-rgb: 255, 196, 9;
   --ion-color-warning-contrast: #000000;
-  --ion-color-warning-contrast-rgb: 0,0,0;
-  --ion-color-warning-shade: #e0b13e;
-  --ion-color-warning-tint: #ffd359;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e0ac08;
+  --ion-color-warning-tint: #ffca22;
 
-  --ion-color-danger: #eb445a;          // Rojo cereza
-  --ion-color-danger-rgb: 235,68,90;
+  /** danger **/
+  --ion-color-danger: #eb445a;
+  --ion-color-danger-rgb: 235, 68, 90;
   --ion-color-danger-contrast: #ffffff;
-  --ion-color-danger-contrast-rgb: 255,255,255;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
   --ion-color-danger-shade: #cf3c4f;
   --ion-color-danger-tint: #ed576b;
 
-  --ion-color-dark: #2f1b14;            // Marrón chocolate oscuro
-  --ion-color-dark-rgb: 47,27,20;
+  /** dark (Marrón Chocolate) **/
+  --ion-color-dark: #5d4037;
+  --ion-color-dark-rgb: 93, 64, 55;
   --ion-color-dark-contrast: #ffffff;
-  --ion-color-dark-contrast-rgb: 255,255,255;
-  --ion-color-dark-shade: #29180f;
-  --ion-color-dark-tint: #44312c;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #523830;
+  --ion-color-dark-tint: #6d534a;
 
-  --ion-color-medium: #5d4037;          // Marrón más oscuro para mejor contraste
-  --ion-color-medium-rgb: 93,64,55;
+  /** medium (Marrón Grisáceo) **/
+  --ion-color-medium: #a1887f;
+  --ion-color-medium-rgb: 161, 136, 127;
   --ion-color-medium-contrast: #ffffff;
-  --ion-color-medium-contrast-rgb: 255,255,255;
-  --ion-color-medium-shade: #52372f;
-  --ion-color-medium-tint: #6d4c41;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #8e7770;
+  --ion-color-medium-tint: #ab938c;
 
-  --ion-color-light: #fbf2ef;           // Crema vainilla
-  --ion-color-light-rgb: 251,242,239;
+  /** light (Crema Claro) **/
+  --ion-color-light: #fdfbf7;
+  --ion-color-light-rgb: 253, 251, 247;
   --ion-color-light-contrast: #000000;
-  --ion-color-light-contrast-rgb: 0,0,0;
-  --ion-color-light-shade: #ddd4d2;
-  --ion-color-light-tint: #fbf3f1;
+  --ion-color-light-contrast-rgb: 0, 0, 0;
+  --ion-color-light-shade: #dedcdf;
+  --ion-color-light-tint: #fefcf8;
 
-  // Colores personalizados de pastelería
-  --pastry-pink: #ffb3d1;              // Rosa suave
-  --pastry-cream: #fff8dc;             // Crema
-  --pastry-caramel: #d2691e;           // Caramelo
-  --pastry-mint: #98fb98;              // Verde menta
-  --pastry-lavender: #e6e6fa;          // Lavanda
-  --pastry-peach: #ffcba4;             // Durazno
+  // Fondo principal
+  --ion-background-color: #fdfbf7;
+  --ion-background-color-rgb: 253, 251, 247;
 
-  // Fondo principal más cálido
-  --ion-background-color: #fef9f6;      // Fondo crema muy suave
-  --ion-background-color-rgb: 254,249,246;
+  // Color de texto principal
+  --ion-text-color: #5d4037;
+  --ion-text-color-rgb: 93, 64, 55;
 
-  // Colores de texto con mejor contraste
-  --ion-text-color: #1a0f0a;
-  --ion-text-color-rgb: 26,15,10;
+  // Sombras
+  --ion-box-shadow: 0 4px 16px rgba(93, 64, 55, 0.1);
+  --ion-box-shadow-hover: 0 8px 24px rgba(93, 64, 55, 0.15);
 
-  // Sombras más suaves y cálidas
-  --ion-box-shadow: 0 4px 16px rgba(255, 107, 157, 0.15);
-  --ion-box-shadow-hover: 0 8px 24px rgba(255, 107, 157, 0.25);
+  /* Aplicar la nueva fuente a toda la aplicación */
+  /* Pila de fuentes de sistema para un look nativo y profesional */
+  --ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-// Tema oscuro para la pastelería (colores nocturnos cálidos)
+// Tema oscuro
 @media (prefers-color-scheme: dark) {
   :root {
-    --ion-color-primary: #ff8fb3;
-    --ion-color-primary-rgb: 255,143,179;
+    --ion-color-primary: #ffb38a;
+    --ion-color-primary-rgb: 255, 179, 138;
     --ion-color-primary-contrast: #000000;
-    --ion-color-primary-contrast-rgb: 0,0,0;
-    --ion-color-primary-shade: #e07e9e;
-    --ion-color-primary-tint: #ff9bbb;
+    --ion-color-primary-contrast-rgb: 0, 0, 0;
+    --ion-color-primary-shade: #e09d79;
+    --ion-color-primary-tint: #ffba95;
 
-    --ion-background-color: #1a0f0a;      // Chocolate muy oscuro
-    --ion-background-color-rgb: 26,15,10;
+    --ion-background-color: #2a211e;
+    --ion-background-color-rgb: 42, 33, 30;
 
-    --ion-text-color: #f4e4d6;           // Crema clara
-    --ion-text-color-rgb: 244,228,214;
+    --ion-text-color: #fdfbf7;
+    --ion-text-color-rgb: 253, 251, 247;
 
-    --ion-card-background: #2d1610;       // Marrón oscuro para cards
+    --ion-card-background: #3c302c;
   }
 }
