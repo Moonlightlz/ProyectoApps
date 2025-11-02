@@ -1,40 +1,40 @@
-// Tema Moderno para Pastelería D'Diego
-// Paleta de colores profesional con tonos azules, grises y un acento vibrante.
+// Tema "Menta y Melocotón" para Pastelería D'Diego
+// Paleta de colores fresca, cálida y apetitosa.
 
-/* Definición de la fuente personalizada "Canter" */
+/* Definición de la fuente personalizada "Nano" */
 @font-face {
-  font-family: 'Canter';
+  font-family: 'Nano';
   /* Asegúrate de que el nombre del archivo coincida con el que tienes */
-  src: url('/assets/fonts/Canter.woff2') format('woff2'); 
+  src: url('/assets/fonts/Nano.woff2') format('woff2'); 
   font-weight: normal;
   font-style: normal;
 }
 
 /** Ionic CSS Variables **/
 :root {
-  /** primary **/
-  --ion-color-primary: #0a2540;
-  --ion-color-primary-rgb: 10, 37, 64;
+  /** primary (Melocotón Suave) **/
+  --ion-color-primary: #ffb38a;
+  --ion-color-primary-rgb: 255, 179, 138;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #092138;
-  --ion-color-primary-tint: #233b53;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #e09d79;
+  --ion-color-primary-tint: #ffba95;
 
-  /** secondary **/
-  --ion-color-secondary: #00d4a1;
-  --ion-color-secondary-rgb: 0, 212, 161;
+  /** secondary (Menta Fresca) **/
+  --ion-color-secondary: #a0d8b3;
+  --ion-color-secondary-rgb: 160, 216, 179;
   --ion-color-secondary-contrast: #000000;
   --ion-color-secondary-contrast-rgb: 0, 0, 0;
-  --ion-color-secondary-shade: #00ba8e;
-  --ion-color-secondary-tint: #1ad7aa;
+  --ion-color-secondary-shade: #8dbd9d;
+  --ion-color-secondary-tint: #aadbb9;
 
-  /** tertiary **/
-  --ion-color-tertiary: #6dd3ff;
-  --ion-color-tertiary-rgb: 109, 211, 255;
+  /** tertiary (Café con Leche) **/
+  --ion-color-tertiary: #c4a385;
+  --ion-color-tertiary-rgb: 196, 163, 133;
   --ion-color-tertiary-contrast: #000000;
   --ion-color-tertiary-contrast-rgb: 0, 0, 0;
-  --ion-color-tertiary-shade: #60b9e0;
-  --ion-color-tertiary-tint: #7cd6ff;
+  --ion-color-tertiary-shade: #ac8f74;
+  --ion-color-tertiary-tint: #caab90;
 
   /** success **/
   --ion-color-success: #2dd36f;
@@ -60,63 +60,63 @@
   --ion-color-danger-shade: #cf3c4f;
   --ion-color-danger-tint: #ed576b;
 
-  /** dark **/
-  --ion-color-dark: #1a202c;
-  --ion-color-dark-rgb: 26, 32, 44;
+  /** dark (Marrón Chocolate) **/
+  --ion-color-dark: #5d4037;
+  --ion-color-dark-rgb: 93, 64, 55;
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
-  --ion-color-dark-shade: #171c27;
-  --ion-color-dark-tint: #313641;
+  --ion-color-dark-shade: #523830;
+  --ion-color-dark-tint: #6d534a;
 
-  /** medium **/
-  --ion-color-medium: #8898aa;
-  --ion-color-medium-rgb: 136, 152, 170;
-  --ion-color-medium-contrast: #000000;
-  --ion-color-medium-contrast-rgb: 0, 0, 0;
-  --ion-color-medium-shade: #788696;
-  --ion-color-medium-tint: #94a2b3;
+  /** medium (Marrón Grisáceo) **/
+  --ion-color-medium: #a1887f;
+  --ion-color-medium-rgb: 161, 136, 127;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #8e7770;
+  --ion-color-medium-tint: #ab938c;
 
-  /** light **/
-  --ion-color-light: #f6f9fc;
-  --ion-color-light-rgb: 246, 249, 252;
+  /** light (Crema Claro) **/
+  --ion-color-light: #fdfbf7;
+  --ion-color-light-rgb: 253, 251, 247;
   --ion-color-light-contrast: #000000;
   --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #d8dade;
-  --ion-color-light-tint: #f7fbfc;
+  --ion-color-light-shade: #dedcdf;
+  --ion-color-light-tint: #fefcf8;
 
-  // Fondo principal más cálido
-  --ion-background-color: #f6f9fc;
-  --ion-background-color-rgb: 246, 249, 252;
+  // Fondo principal
+  --ion-background-color: #fdfbf7;
+  --ion-background-color-rgb: 253, 251, 247;
 
-  // Colores de texto con mejor contraste
-  --ion-text-color: #1a202c;
-  --ion-text-color-rgb: 26, 32, 44;
+  // Color de texto principal
+  --ion-text-color: #5d4037;
+  --ion-text-color-rgb: 93, 64, 55;
 
-  // Sombras más suaves y cálidas
-  --ion-box-shadow: 0 4px 16px rgba(10, 37, 64, 0.12);
-  --ion-box-shadow-hover: 0 8px 24px rgba(10, 37, 64, 0.2);
+  // Sombras
+  --ion-box-shadow: 0 4px 16px rgba(93, 64, 55, 0.1);
+  --ion-box-shadow-hover: 0 8px 24px rgba(93, 64, 55, 0.15);
 
   /* Aplicar la nueva fuente a toda la aplicación */
   /* Pila de fuentes de sistema para un look nativo y profesional */
   --ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-// Tema oscuro moderno
+// Tema oscuro
 @media (prefers-color-scheme: dark) {
   :root {
-    --ion-color-primary: #6dd3ff;
-    --ion-color-primary-rgb: 109, 211, 255;
+    --ion-color-primary: #ffb38a;
+    --ion-color-primary-rgb: 255, 179, 138;
     --ion-color-primary-contrast: #000000;
     --ion-color-primary-contrast-rgb: 0, 0, 0;
-    --ion-color-primary-shade: #60b9e0;
-    --ion-color-primary-tint: #7cd6ff;
+    --ion-color-primary-shade: #e09d79;
+    --ion-color-primary-tint: #ffba95;
 
-    --ion-background-color: #1a202c;
-    --ion-background-color-rgb: 26, 32, 44;
+    --ion-background-color: #2a211e;
+    --ion-background-color-rgb: 42, 33, 30;
 
-    --ion-text-color: #f6f9fc;
-    --ion-text-color-rgb: 246, 249, 252;
+    --ion-text-color: #fdfbf7;
+    --ion-text-color-rgb: 253, 251, 247;
 
-    --ion-card-background: #252c3b;
+    --ion-card-background: #3c302c;
   }
 }

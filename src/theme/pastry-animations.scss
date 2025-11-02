@@ -53,8 +53,8 @@ ion-card {
   border-radius: 16px !important;
   box-shadow: var(--ion-box-shadow) !important;
   animation: fadeInUp 0.6s ease-out;
-  border: 1px solid rgba(255, 107, 157, 0.2);
-  background: linear-gradient(135deg, #ffffff 0%, #fef9f6 100%);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.2);
+  background: var(--ion-color-light);
   color: var(--ion-text-color) !important;
 }
 
@@ -78,6 +78,14 @@ ion-button:not([fill="clear"]):hover {
 ion-button[color="primary"] {
   --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%);
 }
+
+ion-button[color="tertiary"],
+ion-fab-button[color="tertiary"] {
+  /* degradado cálido entre naranja y amarillo suave */
+  --background: linear-gradient(135deg, #FFA500 0%, #FFD54F 100%);
+  --color: #ffffff; /* texto blanco */
+}
+
 
 /* Botones con efecto de ondas */
 ion-button::part(native) {
@@ -105,7 +113,7 @@ ion-button:active::part(native)::before {
 
 /* Estilo mejorado para headers */
 ion-header {
-  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
 }
 
 ion-header ion-toolbar {
@@ -117,7 +125,7 @@ ion-header ion-toolbar {
 }
 
 ion-title {
-  font-family: 'Canter', sans-serif; /* Aplicamos la nueva fuente */
+  font-family: 'Nano', sans-serif; /* Aplicamos la nueva fuente */
   font-size: 1.6rem; /* Hacemos el título más grande */
   letter-spacing: 1px; /* Añadimos un ligero espaciado para mejorar la legibilidad */
   text-align: center; /* Centramos el título */
@@ -128,13 +136,13 @@ ion-title {
 
 /* Estilo mejorado para tabs */
 ion-tab-bar {
-  border-top: 1px solid rgba(255, 107, 157, 0.2);
-  background: linear-gradient(135deg, #ffffff 0%, var(--ion-color-light) 100%);
+  border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.1);
+  background: var(--ion-color-light, #fcf8f3);
   backdrop-filter: blur(10px);
 }
 
 ion-tab-button {
-  --color: #2f1b14;
+  --color: var(--ion-color-medium, #8d7b79);
   --color-selected: var(--ion-color-primary);
   transition: all 0.3s ease;
   font-weight: 600; /* Reducido de 700 a 600 */
@@ -174,11 +182,18 @@ ion-input {
   --padding: 16px;
 }
 
+/* Estilo mejorado para items, especialmente en listas de perfil */
 ion-item {
   --border-radius: 12px;
-  --background: rgba(255, 255, 255, 0.8);
-  --border-color: rgba(255, 107, 157, 0.2);
+  --background: transparent;
+  --border-color: rgba(var(--ion-color-dark-rgb), 0.1);
+  --inner-padding-end: 16px;
+  --padding-start: 16px;
   margin-bottom: 8px;
+}
+
+ion-item.item-interactive {
+  --background: rgba(255, 255, 255, 0.8);
 }
 
 ion-item:hover {
@@ -188,6 +203,7 @@ ion-item:hover {
 
 /* Lista con animaciones escalonadas */
 ion-list ion-item {
+  --background: white;
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -208,13 +224,13 @@ ion-grid ion-col:nth-child(even) {
 
 /* Estilo para contenido principal */
 ion-content {
-  --background: linear-gradient(180deg, #fef9f6 0%, #fff8f3 100%);
-  --color: #1a0f0a !important;
+  --background: var(--ion-background-color, #fdfbf7);
+  --color: var(--ion-text-color, #4a2c2a) !important;
 }
 
 /* Mejorar contraste en textos */
 ion-label, ion-card-title, ion-card-subtitle, ion-item, p, h1, h2, h3, h4, h5, h6 {
-  color: #1a0f0a !important;
+  color: var(--ion-text-color, #5e3835) !important;
   font-weight: 400; /* Reducido a normal (400) para el texto general */
 }
 
@@ -223,7 +239,7 @@ ion-card-title {
 }
 
 ion-card-subtitle {
-  color: #5d4037 !important;
+  color: var(--ion-color-medium, #8d7b79) !important;
   font-weight: 500 !important; /* Reducido de 600 a 500 */
 }
 
@@ -232,7 +248,7 @@ ion-card-subtitle {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(255, 107, 157, 0.3);
+  border: 3px solid rgba(var(--ion-color-primary-rgb), 0.3);
   border-radius: 50%;
   border-top-color: var(--ion-color-primary);
   animation: softRotate 1s linear infinite;
@@ -255,7 +271,7 @@ ion-card-subtitle {
 
 /* Estilo para badges/chips */
 ion-chip {
-  --background: linear-gradient(135deg, var(--pastry-pink) 0%, var(--pastry-peach) 100%);
+  --background: var(--ion-color-secondary);
   --color: var(--ion-color-dark);
   border-radius: 20px;
   font-weight: 500; /* Reducido de 600 a 500 */
@@ -273,7 +289,7 @@ ion-modal ion-content {
 /* Estilo para alertas/toasts */
 ion-toast {
   --border-radius: 12px;
-  --box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3);
+  --box-shadow: 0 8px 32px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 
 /* Responsive - animaciones más suaves en dispositivos móviles */
