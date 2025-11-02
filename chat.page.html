@@ -1,0 +1,67 @@
+<!-- src/app/pages/chat/chat.page.html -->
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="header-title">
+        Pastelería D'Diego
+        <span class="header-status">
+          <ion-icon name="ellipse" class="online-indicator"></ion-icon>
+          En línea
+        </span>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" #chatContent>
+  <!-- Mensaje cuando el chat está cerrado -->
+  <div *ngIf="isChatClosed" class="chat-closed-container">
+    <ion-icon name="lock-closed-outline"></ion-icon>
+    <p>Tu chat fue cerrado por un administrador.</p>
+    <span>Puedes iniciar uno nuevo si tienes más preguntas.</span>
+  </div>
+
+  <!-- Lista de mensajes del chat -->
+  <div class="message-list" *ngIf="!isChatClosed">
+    <div *ngFor="let message of messages" class="message-wrapper">
+      <div class="message-bubble" [ngClass]="{
+          'sent': message.sender === 'user',
+          'received': message.sender === 'admin'
+        }">
+
+        <!-- Mensaje de texto -->
+        <p *ngIf="message.type === 'text'">{{ message.content }}</p>
+
+        <!-- Mensaje de imagen -->
+        <div *ngIf="message.type === 'image'" class="image-message">
+          <img [src]="message.content" alt="Imagen enviada" (click)="openImage(message.content)">
+        </div>
+
+        <div class="time">{{ message.timestamp | date:'shortTime' }}</div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border" *ngIf="!isChatClosed">
+  <ion-toolbar class="chat-input-toolbar">
+    <ion-button fill="clear" slot="start" class="attach-button" (click)="attachImage()">
+      <ion-icon slot="icon-only" name="attach-outline"></ion-icon>
+    </ion-button>
+
+    <ion-textarea
+      placeholder="Escribe tu mensaje..."
+      [(ngModel)]="newMessage"
+      (keydown.enter)="sendMessage($event)"
+      autoGrow="true"
+      class="chat-input">
+    </ion-textarea>
+
+    <ion-button fill="clear" slot="end" class="send-button" (click)="sendMessage()" [disabled]="!newMessage || newMessage.trim() === ''">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

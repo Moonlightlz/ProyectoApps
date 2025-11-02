@@ -1,0 +1,158 @@
+// src/app/pages/chat/chat.page.scss
+
+// --- Variables de Color ---
+:root {
+  --chat-bg-color: #f0f2f5;
+  --bubble-sent-bg: #ffdde1; // Rosado claro para el usuario
+  --bubble-sent-text: #333;
+  --bubble-received-bg: #ffffff; // Blanco para el admin
+  --bubble-received-text: #333;
+  --timestamp-color: #888;
+}
+
+// --- Encabezado ---
+ion-toolbar[color="primary"] {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+.header-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1.2;
+  padding-left: 4px;
+}
+
+.header-status {
+  font-size: 0.75rem;
+  font-weight: normal;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.online-indicator {
+  color: #2dd36f; // Verde "en línea"
+  font-size: 0.6rem;
+}
+
+// --- Contenido del Chat ---
+ion-content {
+  --background: var(--chat-bg-color);
+}
+
+.message-list {
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  p {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .time {
+    font-size: 0.7rem;
+    color: var(--timestamp-color);
+    margin-top: 5px;
+    text-align: right;
+  }
+}
+
+// Burbuja del usuario (enviado)
+.message-bubble.sent {
+  background: var(--bubble-sent-bg);
+  color: var(--bubble-sent-text);
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+
+// Burbuja del admin (recibido)
+.message-bubble.received {
+  background: var(--bubble-received-bg);
+  color: var(--bubble-received-text);
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+// Estilos para mensajes de imagen
+.image-message {
+  cursor: pointer;
+  img {
+    max-width: 100%;
+    border-radius: 12px;
+    display: block;
+  }
+}
+
+// --- Pie de página (Input) ---
+.chat-input-toolbar {
+  --background: #ffffff;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  padding-bottom: var(--ion-safe-area-bottom, 0);
+}
+
+.chat-input {
+  background: var(--chat-bg-color);
+  border-radius: 20px;
+  padding: 8px 12px !important;
+  margin: 4px 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.attach-button, .send-button {
+  --color: var(--ion-color-medium-shade);
+  font-size: 1.4rem;
+}
+
+.send-button {
+  --color: var(--ion-color-primary);
+}
+
+// --- Estado de Chat Cerrado ---
+.chat-closed-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium-shade);
+
+  ion-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  span {
+    font-size: 0.9rem;
+  }
+}
