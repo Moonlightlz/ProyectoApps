@@ -7,6 +7,22 @@
     </ion-buttons>
     <ion-title>Panel de Administración</ion-title>
     <ion-buttons slot="end">
+      <!-- 🆕 Botón de Google Drive -->
+      <ion-button 
+        *ngIf="!driveConnected" 
+        (click)="connectGoogleDrive()" 
+        fill="clear"
+        color="light">
+        <ion-icon name="cloud-offline-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button 
+        *ngIf="driveConnected" 
+        (click)="showDriveStorageInfo()" 
+        fill="clear"
+        color="success">
+        <ion-icon name="cloud-done-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      
       <ion-button (click)="goToCatalog()" fill="clear">
         <ion-icon name="storefront-outline" slot="start"></ion-icon>
         Ver Catálogo
@@ -512,21 +528,35 @@
         <div class="form-section">
           <div class="section-header">
             <h3>Imágenes del Producto</h3>
+            
+            <!-- 🆕 Botones de Google Drive -->
+            <div class="photo-buttons" style="margin-bottom: 12px;">
+              <ion-button 
+                fill="solid" 
+                size="small"
+                color="primary"
+                (click)="selectFromGoogleDrive()">
+                <ion-icon name="cloud" slot="start"></ion-icon>
+                Seleccionar de Drive
+              </ion-button>
+              <ion-button 
+                fill="solid" 
+                size="small"
+                color="secondary"
+                (click)="uploadToGoogleDrive()">
+                <ion-icon name="cloud-upload" slot="start"></ion-icon>
+                Subir a Drive
+              </ion-button>
+            </div>
+            
+            <!-- Opciones tradicionales -->
             <div class="photo-buttons">
               <ion-button 
                 fill="outline" 
                 size="small"
                 (click)="selectPhotoSource()">
                 <ion-icon name="camera" slot="start"></ion-icon>
-                Cámara
-              </ion-button>
-              <ion-button 
-                fill="outline" 
-                size="small"
-                color="secondary"
-                (click)="selectPhotoSource()">
-                <ion-icon name="images" slot="start"></ion-icon>
-                Galería
+                Local (Cámara/Galería)
               </ion-button>
               <ion-button 
                 fill="outline" 

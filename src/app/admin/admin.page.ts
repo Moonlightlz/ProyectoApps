@@ -8,6 +8,7 @@ import { ProductService } from '../services/product.service';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { PhotoService } from '../services/photo';
+import { GoogleDriveService } from '../services/google-drive.service';
 import { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
 
 @Component({
@@ -53,8 +54,16 @@ export class AdminPage implements OnInit, OnDestroy {
     preparationTime: 0,
     servingSize: '',
     imageUrl: '',
-    images: [] as string[]
+    images: [] as string[],
+    // 🆕 Campos para Google Drive
+    driveFileId: '' as string | undefined,
+    driveFileIds: [] as string[],
+    imageSource: 'url' as 'firebase' | 'drive' | 'url'
   };
+  
+  // 🆕 Estado de Google Drive
+  driveConnected = false;
+  driveStorageInfo: any = null;
   
   // Ingredientes y alérgenos disponibles
   availableIngredients = [
@@ -73,6 +82,7 @@ export class AdminPage implements OnInit, OnDestroy {
     private userService: UserService,
     private authService: AuthService,
     private photoService: PhotoService,
+    private driveService: GoogleDriveService,
     private router: Router,
     private loadingController: LoadingController,
     private alertController: AlertController,
@@ -84,6 +94,8 @@ export class AdminPage implements OnInit, OnDestroy {
     await this.checkAdminAccess();
     if (this.isAdmin) {
       await this.loadData();
+      // 🆕 Inicializar Google Drive
+      await this.initGoogleDrive();
     }
   }
 
@@ -230,7 +242,10 @@ export class AdminPage implements OnInit, OnDestroy {
         preparationTime: product.preparationTime || 0,
         servingSize: product.servingSize || '',
         imageUrl: product.imageUrl || '',
-        images: product.images ? [...product.images] : []
+        images: product.images ? [...product.images] : [],
+        driveFileId: product.driveFileId || undefined,
+        driveFileIds: product.driveFileIds ? [...product.driveFileIds] : [],
+        imageSource: product.imageSource || 'url'
       };
     } else {
       this.editingProduct = null;
@@ -262,7 +277,10 @@ export class AdminPage implements OnInit, OnDestroy {
       preparationTime: 0,
       servingSize: '',
       imageUrl: '',
-      images: []
+      images: [],
+      driveFileId: undefined,
+      driveFileIds: [],
+      imageSource: 'url'
     };
   }
 
@@ -284,18 +302,32 @@ export class AdminPage implements OnInit, OnDestroy {
         return;
       }
 
-      // Procesar imagen si es dataUrl
+      // 🆕 Procesar imagen según el origen
       let processedImageUrl = this.productForm.imageUrl;
-      if (this.productForm.imageUrl && this.productForm.imageUrl.startsWith('data:')) {
+      let imageSource = this.productForm.imageSource;
+
+      // Si la imagen viene de Google Drive, no hacer nada (ya tiene URL válida)
+      if (this.productForm.driveFileId && this.productForm.imageSource === 'drive') {
+        processedImageUrl = this.productForm.imageUrl;
+        imageSource = 'drive';
+      }
+      // Si es dataUrl (imagen local), subir a Firebase
+      else if (this.productForm.imageUrl && this.productForm.imageUrl.startsWith('data:')) {
         try {
           const tempProductId = this.editingProduct?.id || Date.now().toString();
           const uploadedUrl = await this.productService.uploadProductImage(this.productForm.imageUrl, tempProductId);
           if (uploadedUrl) {
             processedImageUrl = uploadedUrl;
+            imageSource = 'firebase';
           }
         } catch (error) {
+          console.error('Error subiendo imagen a Firebase:', error);
           // Continuar con dataUrl como fallback
         }
+      }
+      // Si es URL externa
+      else if (this.productForm.imageUrl && this.productForm.imageUrl.startsWith('http')) {
+        imageSource = 'url';
       }
 
       if (this.editingProduct) {
@@ -309,7 +341,10 @@ export class AdminPage implements OnInit, OnDestroy {
           ingredients: this.productForm.ingredients,
           allergens: this.productForm.allergens,
           nutritionalInfo: this.productForm.nutritionalInfo,
-          imageUrl: processedImageUrl
+          imageUrl: processedImageUrl,
+          driveFileId: this.productForm.driveFileId,
+          driveFileIds: this.productForm.driveFileIds,
+          imageSource: imageSource
         };
         await this.productService.updateProduct(this.editingProduct.id, updateRequest);
         await this.showToast('Producto actualizado correctamente', 'success');
@@ -326,7 +361,10 @@ export class AdminPage implements OnInit, OnDestroy {
           ingredients: this.productForm.ingredients,
           allergens: this.productForm.allergens,
           nutritionalInfo: this.productForm.nutritionalInfo,
-          imageUrl: processedImageUrl
+          imageUrl: processedImageUrl,
+          driveFileId: this.productForm.driveFileId,
+          driveFileIds: this.productForm.driveFileIds,
+          imageSource: imageSource
         };
         const productId = await this.productService.createProduct(createRequest, currentUser.uid);
         
@@ -1063,6 +1101,362 @@ export class AdminPage implements OnInit, OnDestroy {
       await this.showToast('Error al limpiar categorías duplicadas', 'danger');
     } finally {
       await loading.dismiss();
+    }
+  }
+
+  // ============================================
+  // 🆕 FUNCIONES DE GOOGLE DRIVE
+  // ============================================
+
+  /**
+   * Inicializar Google Drive al cargar la página de admin
+   */
+  async initGoogleDrive() {
+    try {
+      // Verificar si Google Drive está configurado
+      if (!this.driveService.isConfigured()) {
+        console.log('⚠️ Google Drive no configurado. Ver guias/GoogleDriveSetup.md');
+        return;
+      }
+
+      // Intentar autenticar automáticamente (si hay token guardado)
+      if (this.driveService.isAuthenticated()) {
+        this.driveConnected = true;
+        
+        // Obtener información de almacenamiento
+        this.driveStorageInfo = await this.driveService.getStorageInfo();
+        
+        if (this.driveStorageInfo) {
+          console.log('💾 Google Drive conectado:', this.driveStorageInfo.availableGB, 'disponibles');
+        }
+      } else {
+        console.log('ℹ️ Google Drive: Presiona "Conectar Drive" para autenticar');
+      }
+      
+    } catch (error) {
+      console.log('⚠️ Google Drive no disponible:', error);
+    }
+  }
+
+  /**
+   * Conectar con Google Drive manualmente
+   */
+  async connectGoogleDrive() {
+    const loading = await this.loadingController.create({
+      message: 'Conectando con Google Drive...'
+    });
+    await loading.present();
+
+    try {
+      const authenticated = await this.driveService.authenticate();
+      
+      if (authenticated) {
+        this.driveConnected = true;
+        this.driveStorageInfo = await this.driveService.getStorageInfo();
+        
+        await loading.dismiss();
+        await this.showToast('✅ Google Drive conectado exitosamente', 'success');
+        
+        // Mostrar info de almacenamiento
+        if (this.driveStorageInfo) {
+          await this.showDriveStorageInfo();
+        }
+      } else {
+        await loading.dismiss();
+        await this.showToast('No se pudo conectar con Google Drive', 'danger');
+      }
+      
+    } catch (error) {
+      await loading.dismiss();
+      await this.showToast('Error al conectar con Google Drive', 'danger');
+      console.error('Error conectando Drive:', error);
+    }
+  }
+
+  /**
+   * Desconectar Google Drive
+   */
+  async disconnectGoogleDrive() {
+    const alert = await this.alertController.create({
+      header: 'Desconectar Google Drive',
+      message: '¿Deseas cerrar sesión de Google Drive?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Desconectar',
+          handler: async () => {
+            await this.driveService.signOut();
+            this.driveConnected = false;
+            this.driveStorageInfo = null;
+            await this.showToast('Google Drive desconectado', 'success');
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Mostrar información de almacenamiento de Drive
+   */
+  async showDriveStorageInfo() {
+    if (!this.driveStorageInfo) return;
+
+    const alert = await this.alertController.create({
+      header: '💾 Almacenamiento de Drive',
+      message: `
+        <p><strong>Total:</strong> ${this.driveStorageInfo.limitGB}</p>
+        <p><strong>Usado:</strong> ${this.driveStorageInfo.usageGB}</p>
+        <p><strong>Disponible:</strong> ${this.driveStorageInfo.availableGB}</p>
+      `,
+      buttons: ['Cerrar']
+    });
+    await alert.present();
+  }
+
+  /**
+   * BOTÓN 1: Seleccionar imagen de Google Drive
+   */
+  async selectFromGoogleDrive() {
+    try {
+      // Verificar autenticación
+      if (!this.driveConnected || !this.driveService.isAuthenticated()) {
+        const shouldConnect = await this.confirmConnectDrive();
+        if (!shouldConnect) return;
+        
+        const authenticated = await this.driveService.authenticate();
+        if (!authenticated) {
+          await this.showToast('No se pudo conectar con Google Drive', 'danger');
+          return;
+        }
+        this.driveConnected = true;
+      }
+
+      const loading = await this.loadingController.create({
+        message: 'Abriendo Google Drive...'
+      });
+      await loading.present();
+
+      // Abrir selector de Google Drive
+      const selectedFile = await this.driveService.openPicker();
+      
+      await loading.dismiss();
+
+      if (selectedFile) {
+        console.log('📁 Archivo seleccionado de Drive:', selectedFile);
+        
+        // Usar la URL que viene del picker (ya usa formato googleusercontent)
+        const imageUrl = selectedFile.webViewLink || this.driveService.getImageUrl(selectedFile.id);
+        
+        console.log('🖼️ URL final de imagen (googleusercontent):', imageUrl);
+        console.log('🆔 File ID:', selectedFile.id);
+        
+        // Agregar al formulario
+        this.addImageToForm(imageUrl);
+        this.productForm.driveFileId = selectedFile.id;
+        this.productForm.imageSource = 'drive';
+        
+        await this.showToast('✅ Imagen de Drive agregada: ' + selectedFile.name, 'success');
+      }
+      
+    } catch (error) {
+      console.error('Error seleccionando de Drive:', error);
+      await this.showToast('Error al seleccionar imagen de Drive', 'danger');
+    }
+  }
+
+  /**
+   * BOTÓN 2: Subir nueva imagen a Google Drive
+   */
+  async uploadToGoogleDrive() {
+    try {
+      // Verificar autenticación
+      if (!this.driveConnected || !this.driveService.isAuthenticated()) {
+        const shouldConnect = await this.confirmConnectDrive();
+        if (!shouldConnect) return;
+        
+        const authenticated = await this.driveService.authenticate();
+        if (!authenticated) {
+          await this.showToast('No se pudo conectar con Google Drive', 'danger');
+          return;
+        }
+        this.driveConnected = true;
+      }
+
+      // Mostrar opciones para capturar/seleccionar foto
+      const actionSheet = await this.actionSheetController.create({
+        header: 'Subir a Google Drive',
+        subHeader: 'Selecciona el origen de la imagen',
+        buttons: [
+          {
+            text: 'Cámara',
+            icon: 'camera',
+            handler: () => this.uploadFromCameraToDrive()
+          },
+          {
+            text: 'Galería',
+            icon: 'images',
+            handler: () => this.uploadFromGalleryToDrive()
+          },
+          {
+            text: 'Cancelar',
+            icon: 'close',
+            role: 'cancel'
+          }
+        ]
+      });
+      await actionSheet.present();
+      
+    } catch (error) {
+      console.error('Error en uploadToGoogleDrive:', error);
+      await this.showToast('Error al preparar subida a Drive', 'danger');
+    }
+  }
+
+  /**
+   * Subir desde cámara → Google Drive
+   */
+  private async uploadFromCameraToDrive() {
+    try {
+      // Capturar foto
+      const photoUrl = await this.photoService.takePhoto({ source: 'camera' });
+      
+      if (!photoUrl) {
+        await this.showToast('No se capturó ninguna foto', 'warning');
+        return;
+      }
+
+      await this.uploadPhotoToDrive(photoUrl, 'camera');
+      
+    } catch (error) {
+      console.error('Error subiendo desde cámara:', error);
+      await this.showToast('Error al capturar y subir foto', 'danger');
+    }
+  }
+
+  /**
+   * Subir desde galería → Google Drive
+   */
+  private async uploadFromGalleryToDrive() {
+    try {
+      // Seleccionar foto de galería
+      const photoUrl = await this.photoService.takePhoto({ source: 'gallery' });
+      
+      if (!photoUrl) {
+        await this.showToast('No se seleccionó ninguna foto', 'warning');
+        return;
+      }
+
+      await this.uploadPhotoToDrive(photoUrl, 'gallery');
+      
+    } catch (error) {
+      console.error('Error subiendo desde galería:', error);
+      await this.showToast('Error al seleccionar y subir foto', 'danger');
+    }
+  }
+
+  /**
+   * Función auxiliar para subir foto a Drive
+   */
+  private async uploadPhotoToDrive(photoUrl: string, source: string) {
+    const loading = await this.loadingController.create({
+      message: 'Subiendo imagen a Google Drive...'
+    });
+    await loading.present();
+
+    try {
+      // Generar nombre único para el archivo
+      const timestamp = Date.now();
+      const filename = `product_${timestamp}_${source}.jpg`;
+      
+      // Subir a Google Drive
+      const uploadedFile = await this.driveService.uploadImage(photoUrl, filename);
+      
+      await loading.dismiss();
+
+      if (uploadedFile) {
+        // Obtener URL de visualización
+        const imageUrl = this.driveService.getImageUrl(uploadedFile.id);
+        
+        // Agregar al formulario
+        this.addImageToForm(imageUrl);
+        this.productForm.driveFileId = uploadedFile.id;
+        this.productForm.imageSource = 'drive';
+        
+        await this.showToast('✅ Imagen subida a Drive exitosamente', 'success');
+      } else {
+        await this.showToast('Error al subir imagen a Drive', 'danger');
+      }
+      
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error subiendo a Drive:', error);
+      await this.showToast('Error al subir imagen a Drive', 'danger');
+    }
+  }
+
+  /**
+   * Confirmar conexión a Google Drive
+   */
+  private async confirmConnectDrive(): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertController.create({
+        header: 'Conectar Google Drive',
+        message: 'Para usar esta función, necesitas conectar tu cuenta de Google Drive. ¿Deseas continuar?',
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            handler: () => resolve(false)
+          },
+          {
+            text: 'Conectar',
+            handler: () => resolve(true)
+          }
+        ]
+      });
+      await alert.present();
+    });
+  }
+
+  /**
+   * Ver lista de imágenes en Google Drive
+   */
+  async viewDriveImages() {
+    try {
+      if (!this.driveConnected || !this.driveService.isAuthenticated()) {
+        await this.showToast('Primero debes conectar Google Drive', 'warning');
+        return;
+      }
+
+      const loading = await this.loadingController.create({
+        message: 'Cargando imágenes de Drive...'
+      });
+      await loading.present();
+
+      const images = await this.driveService.listProductImages();
+      
+      await loading.dismiss();
+
+      if (images.length === 0) {
+        await this.showToast('No hay imágenes en Drive', 'warning');
+        return;
+      }
+
+      // Mostrar lista de imágenes
+      const alert = await this.alertController.create({
+        header: `📁 Imágenes en Drive (${images.length})`,
+        message: images.map(img => `• ${img.name}`).join('<br>'),
+        buttons: ['Cerrar']
+      });
+      await alert.present();
+      
+    } catch (error) {
+      console.error('Error listando imágenes:', error);
+      await this.showToast('Error al listar imágenes de Drive', 'danger');
     }
   }
 

@@ -11,6 +11,10 @@ import { environment } from './environments/environment';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import { registerIcons } from './app/icons';
+
+// Registrar iconos de Ionicons
+registerIcons();
 
 bootstrapApplication(AppComponent, {
   providers: [

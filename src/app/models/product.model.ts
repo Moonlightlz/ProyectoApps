@@ -19,6 +19,10 @@ export interface Product {
   allergens?: string[];
   nutritionalInfo?: NutritionalInfo;
   variants?: ProductVariant[];
+  // 🆕 Campos para Google Drive
+  driveFileId?: string; // ID del archivo principal en Google Drive
+  driveFileIds?: string[]; // IDs de imágenes adicionales en Google Drive
+  imageSource?: 'firebase' | 'drive' | 'url'; // Origen de la imagen
 }
 
 export interface ProductVariant {
@@ -107,6 +111,10 @@ export interface CreateProductRequest {
   featured?: boolean;
   preparationTime?: number;
   servingSize?: string;
+  // 🆕 Campos para Google Drive
+  driveFileId?: string;
+  driveFileIds?: string[];
+  imageSource?: 'firebase' | 'drive' | 'url';
 }
 
 export interface UpdateProductRequest {
@@ -122,6 +130,10 @@ export interface UpdateProductRequest {
   allergens?: string[];
   nutritionalInfo?: NutritionalInfo;
   variants?: ProductVariant[];
+  // 🆕 Campos para Google Drive
+  driveFileId?: string;
+  driveFileIds?: string[];
+  imageSource?: 'firebase' | 'drive' | 'url';
   featured?: boolean;
   preparationTime?: number;
   servingSize?: string;

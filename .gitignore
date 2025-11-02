@@ -66,6 +66,11 @@ GoogleService-Info.plist
 firebase-debug.log
 firebase-debug.*.log
 
+# Google Drive API credentials (sensitive)
+images/*.json
+images/client_secret_*.json
+images/pasteleria-d-diego-*.json
+
 # Capacitor
 
 
