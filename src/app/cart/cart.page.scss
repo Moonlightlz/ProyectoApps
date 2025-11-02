@@ -2,6 +2,20 @@
   padding: 16px;
 }
 
+.section-header {
+  padding: 0 16px 12px;
+  
+  h2 {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
 .cart-item {
   margin-bottom: 8px;
   border-radius: 8px;
@@ -58,6 +72,59 @@
   }
 }
 
+.delivery-card {
+  margin: 16px 0;
+  
+  ion-card-content {
+    padding: 12px;
+    
+    .delivery-info {
+      font-size: 0.9em;
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+    
+    .delivery-options {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-light);
+    }
+  }
+}
+
+.warning-card {
+  margin-top: 12px;
+  border-left: 4px solid var(--ion-color-warning);
+  
+  ion-card-content {
+    padding: 12px;
+    
+    .warning-content {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      
+      ion-icon {
+        font-size: 24px;
+        color: var(--ion-color-warning);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      
+      p {
+        margin: 0;
+        font-size: 0.9em;
+        line-height: 1.5;
+        color: var(--ion-color-dark);
+        
+        strong {
+          color: var(--ion-color-warning-shade);
+        }
+      }
+    }
+  }
+}
+
 .order-summary {
   margin: 16px 0;
   
@@ -89,6 +156,11 @@
     
     .discount {
       color: var(--ion-color-success);
+      font-weight: 600;
+    }
+    
+    .delivery-cost {
+      color: var(--ion-color-primary);
       font-weight: 600;
     }
   }

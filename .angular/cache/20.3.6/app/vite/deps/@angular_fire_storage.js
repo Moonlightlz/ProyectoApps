@@ -1,14 +1,21 @@
 import {
   AppCheckInstances,
   AuthInstances
-} from "./chunk-VORWV4JC.js";
+} from "./chunk-CKERS6P4.js";
+import "./chunk-VZTTZVBQ.js";
 import {
-  Component,
   FirebaseApp,
   FirebaseApps,
+  VERSION,
+  ɵAngularFireSchedulers,
+  ɵgetAllInstancesOf,
+  ɵgetDefaultInstanceOf,
+  ɵzoneWrap
+} from "./chunk-DBEVJVR6.js";
+import {
+  Component,
   FirebaseError,
   SDK_VERSION,
-  VERSION,
   _getProvider,
   _isFirebaseServerApp,
   _registerComponent,
@@ -19,13 +26,8 @@ import {
   isCloudWorkstation,
   pingServer,
   registerVersion,
-  updateEmulatorBanner,
-  ɵAngularFireSchedulers,
-  ɵgetAllInstancesOf,
-  ɵgetDefaultInstanceOf,
-  ɵzoneWrap
-} from "./chunk-PTRUQAWF.js";
-import "./chunk-VZTTZVBQ.js";
+  updateEmulatorBanner
+} from "./chunk-CLXXTND2.js";
 import {
   InjectionToken,
   Injector,

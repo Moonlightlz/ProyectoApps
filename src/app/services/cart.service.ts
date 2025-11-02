@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, getDoc, query, where, orderBy, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { ProductService } from './product.service';
 import { CartItem, Cart } from '../models/cart.model';
@@ -35,7 +35,7 @@ export class CartService {
   }
 
   /**
-   * Cargar carrito del usuario desde Firebase
+   * Cargar carrito del usuario desde su documento en Firestore
    */
   async loadUserCart(): Promise<void> {
     try {
@@ -47,83 +47,74 @@ export class CartService {
 
       console.log('🛒 Cargando carrito del usuario:', user.displayName);
       
-      const cartsRef = collection(this.firestore, 'carts');
-      const q = query(
-        cartsRef,
-        where('userId', '==', user.uid),
-        where('status', '==', 'active'),
-        orderBy('updatedAt', 'desc')
-      );
-
-      const querySnapshot = await getDocs(q);
+      // Leer directamente del documento del usuario
+      const userRef = doc(this.firestore, `users/${user.uid}`);
+      const userDoc = await getDoc(userRef);
       
-      if (!querySnapshot.empty) {
-        // Usar el carrito más reciente
-        const cartDoc = querySnapshot.docs[0];
-        const cartData = cartDoc.data();
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const cartData = userData['profile']?.['cart'];
         
-        const cart: Cart = {
-          id: cartDoc.id,
-          userId: cartData['userId'],
-          items: [],
-          totalItems: cartData['totalItems'] || 0,
-          subtotal: cartData['subtotal'] || 0,
-          tax: cartData['tax'],
-          discount: cartData['discount'],
-          total: cartData['total'] || 0,
-          createdAt: cartData['createdAt']?.toDate() || new Date(),
-          updatedAt: cartData['updatedAt']?.toDate() || new Date(),
-          status: cartData['status'] || 'active'
-        };
+        if (cartData && cartData.items && cartData.items.length > 0) {
+          // Construir el carrito con los datos del usuario
+          const cart: Cart = {
+            id: user.uid, // Usamos el UID como ID del carrito
+            userId: user.uid,
+            items: [],
+            totalItems: cartData.totalItems || 0,
+            subtotal: cartData.subtotal || 0,
+            total: cartData.subtotal || 0,
+            createdAt: new Date(),
+            updatedAt: cartData.updatedAt?.toDate() || new Date(),
+            status: 'active'
+          };
 
-        // Cargar items del carrito
-        const itemsRef = collection(this.firestore, `carts/${cart.id}/items`);
-        const itemsSnapshot = await getDocs(itemsRef);
-        
-        for (const itemDoc of itemsSnapshot.docs) {
-          const itemData = itemDoc.data();
-          
-          // Obtener datos completos del producto
+          // Cargar productos completos para cada item
           const products = await this.productService.getAllProducts();
-          const product = products.find(p => p.id === itemData['productId']);
           
-          if (product) {
-            const cartItem: CartItem = {
-              id: itemDoc.id,
-              productId: itemData['productId'],
-              product: product,
-              quantity: itemData['quantity'],
-              unitPrice: itemData['unitPrice'],
-              totalPrice: itemData['totalPrice'],
-              addedAt: itemData['addedAt']?.toDate() || new Date(),
-              notes: itemData['notes']
-            };
-            cart.items.push(cartItem);
+          for (const item of cartData.items) {
+            const product = products.find(p => p.id === item.productId);
+            
+            if (product) {
+              const cartItem: CartItem = {
+                id: item.productId, // Usar productId como ID único del item
+                productId: item.productId,
+                product: product,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.quantity * item.unitPrice,
+                addedAt: item.addedAt?.toDate() || new Date(),
+                notes: item.notes
+              };
+              cart.items.push(cartItem);
+            }
           }
-        }
 
-        this.cartSubject.next(cart);
-        console.log(`🛒 Carrito cargado: ${cart.items.length} items, total: S/ ${cart.total}`);
+          this.cartSubject.next(cart);
+          console.log(`🛒 Carrito cargado: ${cart.items.length} items, total: S/ ${cart.total}`);
+        } else {
+          // No hay carrito, crear uno vacío
+          this.createEmptyCart();
+        }
       } else {
-        // No hay carrito activo, crear uno nuevo
-        await this.createNewCart();
+        this.createEmptyCart();
       }
 
     } catch (error) {
       console.error('Error cargando carrito:', error);
-      // Fallback a carrito vacío
-      await this.createNewCart();
+      this.createEmptyCart();
     }
   }
 
   /**
-   * Crear un nuevo carrito
+   * Crear un carrito vacío
    */
-  private async createNewCart(): Promise<Cart> {
+  private createEmptyCart(): void {
     const user = this.authService.getCurrentUser();
     const userId = user ? user.uid : 'guest';
 
-    const newCart: Omit<Cart, 'id'> = {
+    const cart: Cart = {
+      id: userId,
       userId: userId,
       items: [],
       totalItems: 0,
@@ -134,22 +125,7 @@ export class CartService {
       status: 'active'
     };
 
-    let cartId: string;
-
-    if (user) {
-      // Guardar en Firebase
-      const cartsRef = collection(this.firestore, 'carts');
-      const docRef = await addDoc(cartsRef, newCart);
-      cartId = docRef.id;
-    } else {
-      // Para invitados, usar ID temporal
-      cartId = 'guest_' + Date.now();
-    }
-
-    const cart: Cart = { ...newCart, id: cartId };
     this.cartSubject.next(cart);
-    
-    return cart;
   }
 
   /**
@@ -162,8 +138,11 @@ export class CartService {
       let cart = this.cartSubject.value;
       
       if (!cart) {
-        cart = await this.createNewCart();
+        this.createEmptyCart();
+        cart = this.cartSubject.value;
       }
+
+      if (!cart) return false;
 
       // Verificar si el producto ya está en el carrito
       const existingItemIndex = cart.items.findIndex(item => item.productId === product.id);
@@ -183,7 +162,7 @@ export class CartService {
       } else {
         // Agregar nuevo item al carrito
         const cartItem: CartItem = {
-          id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          id: product.id, // Usar el ID del producto como ID del item
           productId: product.id,
           product: product,
           quantity: quantity,
@@ -201,7 +180,7 @@ export class CartService {
       this.recalculateCartTotals(cart);
 
       // Guardar cambios
-      await this.saveCart(cart);
+      await this.saveCartToUser(cart);
 
       console.log(`🛒 Carrito actualizado: ${cart.totalItems} items, total: S/ ${cart.total}`);
       return true;
@@ -233,7 +212,7 @@ export class CartService {
       item.totalPrice = quantity * item.unitPrice;
 
       this.recalculateCartTotals(cart);
-      await this.saveCart(cart);
+      await this.saveCartToUser(cart);
 
       console.log(`📦 Cantidad actualizada: ${item.product.name} -> ${quantity}`);
       return true;
@@ -259,7 +238,7 @@ export class CartService {
       cart.items.splice(itemIndex, 1);
 
       this.recalculateCartTotals(cart);
-      await this.saveCart(cart);
+      await this.saveCartToUser(cart);
 
       console.log(`🗑️ Producto eliminado del carrito: ${removedItem.product.name}`);
       return true;
@@ -280,7 +259,7 @@ export class CartService {
 
       cart.items = [];
       this.recalculateCartTotals(cart);
-      await this.saveCart(cart);
+      await this.saveCartToUser(cart);
 
       console.log('🧹 Carrito limpiado completamente');
 
@@ -313,27 +292,36 @@ export class CartService {
   }
 
   /**
-   * Guardar carrito en Firebase o localStorage
+   * Guardar carrito en el documento del usuario en Firestore
    */
-  private async saveCart(cart: Cart): Promise<void> {
+  private async saveCartToUser(cart: Cart): Promise<void> {
     try {
       const user = this.authService.getCurrentUser();
       
       if (user) {
-        // Guardar en Firebase
-        const cartRef = doc(this.firestore, 'carts', cart.id);
-        await updateDoc(cartRef, {
-          totalItems: cart.totalItems,
-          subtotal: cart.subtotal,
-          tax: cart.tax,
-          discount: cart.discount,
-          total: cart.total,
-          updatedAt: cart.updatedAt,
-          status: cart.status
+        console.log('💾 Guardando carrito en documento del usuario...');
+        
+        // Preparar items para guardar (sin el objeto product completo)
+        const cartItems = cart.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          notes: item.notes,
+          addedAt: item.addedAt
+        }));
+
+        // Actualizar el documento del usuario
+        const userRef = doc(this.firestore, `users/${user.uid}`);
+        await updateDoc(userRef, {
+          'profile.cart': {
+            items: cartItems,
+            totalItems: cart.totalItems,
+            subtotal: cart.subtotal,
+            updatedAt: new Date()
+          }
         });
 
-        // Guardar items individualmente
-        // TODO: Implementar guardado de items en subcolección
+        console.log(`✅ Carrito guardado: ${cart.items.length} items`);
       } else {
         // Guardar en localStorage para invitados
         this.saveCartToStorage(cart);

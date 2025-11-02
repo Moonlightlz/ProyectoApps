@@ -22,6 +22,11 @@
 
   <!-- Carrito con productos -->
   <div *ngIf="cart && cart.items.length > 0" class="cart-content">
+    <!-- Título de la sección de productos -->
+    <div class="section-header">
+      <h2>📦 Productos</h2>
+    </div>
+    
     <!-- Lista de productos -->
     <ion-list>
       <ion-item *ngFor="let item of cart.items" class="cart-item">
@@ -68,6 +73,58 @@
       </ion-item>
     </ion-list>
 
+    <!-- Opción de Delivery -->
+    <ion-card class="delivery-card">
+      <ion-card-header>
+        <ion-card-title>🚗 Opciones de Entrega</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-label>
+            <h3>Delivery a domicilio</h3>
+            <p class="delivery-info">Costo: {{ formatPrice(deliveryCost) }}</p>
+          </ion-label>
+          <ion-checkbox 
+            slot="start" 
+            [(ngModel)]="includeDelivery"
+            (ionChange)="onDeliveryChange()">
+          </ion-checkbox>
+        </ion-item>
+
+        <!-- Selector de distancia -->
+        <div *ngIf="includeDelivery" class="delivery-options">
+          <ion-item>
+            <ion-label position="stacked">
+              Distancia aproximada
+            </ion-label>
+            <ion-select 
+              [(ngModel)]="selectedDistance" 
+              (ionChange)="calculateDeliveryCost()"
+              interface="action-sheet"
+              placeholder="Selecciona la distancia">
+              <ion-select-option value="near">Cerca (0-2 km) - S/ 5</ion-select-option>
+              <ion-select-option value="medium">Media (2-4 km) - S/ 10</ion-select-option>
+              <ion-select-option value="far">Lejos (4-6 km) - S/ 15</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Advertencia de distancia -->
+          <ion-card *ngIf="selectedDistance === 'far'" class="warning-card" color="warning">
+            <ion-card-content>
+              <div class="warning-content">
+                <ion-icon name="warning-outline"></ion-icon>
+                <p>
+                  <strong>⚠️ Advertencia:</strong> Para distancias mayores, algunos productos delicados 
+                  podrían no estar disponibles para delivery debido al tiempo de traslado, temperatura 
+                  y riesgo de deterioro. Nos comunicaremos contigo para confirmar la disponibilidad.
+                </p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Resumen del pedido -->
     <ion-card class="order-summary">
       <ion-card-header>
@@ -75,21 +132,43 @@
       </ion-card-header>
       <ion-card-content>
         <ion-grid>
+          <!-- Subtotal sin IGV -->
           <ion-row>
             <ion-col size="8">
-              <p>Subtotal ({{ cart.totalItems }} items):</p>
+              <p>Subtotal sin IGV ({{ cart.totalItems }} items):</p>
             </ion-col>
             <ion-col size="4" class="ion-text-end">
-              <p>{{ formatPrice(cart.subtotal) }}</p>
+              <p>{{ formatPrice(getSubtotalWithoutIGV()) }}</p>
+            </ion-col>
+          </ion-row>
+
+          <!-- IGV (18%) -->
+          <ion-row>
+            <ion-col size="8">
+              <p>IGV (18%):</p>
+            </ion-col>
+            <ion-col size="4" class="ion-text-end">
+              <p>{{ formatPrice(getIGVAmount()) }}</p>
+            </ion-col>
+          </ion-row>
+
+          <!-- Subtotal con IGV -->
+          <ion-row>
+            <ion-col size="8">
+              <p><strong>Subtotal con IGV:</strong></p>
+            </ion-col>
+            <ion-col size="4" class="ion-text-end">
+              <p><strong>{{ formatPrice(cart.subtotal) }}</strong></p>
             </ion-col>
           </ion-row>
           
-          <ion-row *ngIf="cart.tax && cart.tax > 0">
+          <!-- Costo de delivery -->
+          <ion-row *ngIf="includeDelivery">
             <ion-col size="8">
-              <p>Impuestos:</p>
+              <p>Delivery:</p>
             </ion-col>
             <ion-col size="4" class="ion-text-end">
-              <p>{{ formatPrice(cart.tax) }}</p>
+              <p class="delivery-cost">{{ formatPrice(deliveryCost) }}</p>
             </ion-col>
           </ion-row>
           
@@ -106,10 +185,10 @@
           
           <ion-row class="total-row">
             <ion-col size="8">
-              <h3>Total:</h3>
+              <h3>Total a Pagar:</h3>
             </ion-col>
             <ion-col size="4" class="ion-text-end">
-              <h3 class="total-amount">{{ formatPrice(cart.total) }}</h3>
+              <h3 class="total-amount">{{ formatPrice(getFinalTotal()) }}</h3>
             </ion-col>
           </ion-row>
         </ion-grid>

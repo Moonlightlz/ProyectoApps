@@ -24,6 +24,22 @@ export interface UserProfile {
   preferences?: UserPreferences;
   favoriteProducts?: string[];
   orderHistory?: string[];
+  cart?: UserCart;
+}
+
+export interface UserCart {
+  items: UserCartItem[];
+  totalItems: number;
+  subtotal: number;
+  updatedAt: Date;
+}
+
+export interface UserCartItem {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  notes?: string;
+  addedAt: Date;
 }
 
 export interface Address {
