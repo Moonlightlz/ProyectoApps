@@ -2,7 +2,6 @@ import {
   AppCheckInstances,
   AuthInstances
 } from "./chunk-CKERS6P4.js";
-import "./chunk-VZTTZVBQ.js";
 import {
   FirebaseApp,
   FirebaseApps,
@@ -28,6 +27,7 @@ import {
   registerVersion,
   updateEmulatorBanner
 } from "./chunk-CLXXTND2.js";
+import "./chunk-VZTTZVBQ.js";
 import {
   InjectionToken,
   Injector,
