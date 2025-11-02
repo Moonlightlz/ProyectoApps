@@ -66,7 +66,7 @@ ion-card:hover {
 /* Estilo mejorado para botones */
 ion-button {
   --border-radius: 12px;
-  font-weight: 600;
+  font-weight: 500; /* Reducido de 600 a 500 para un look menos pesado */
   text-transform: none;
 }
 
@@ -111,10 +111,17 @@ ion-header {
 ion-header ion-toolbar {
   --background: transparent;
   --color: white;
+  /* Aumentamos la altura del header con padding vertical */
+  --padding-top: 20px;
+  --padding-bottom: 20px;
 }
 
 ion-title {
-  font-weight: 700;
+  font-family: 'Canter', sans-serif; /* Aplicamos la nueva fuente */
+  font-size: 1.6rem; /* Hacemos el título más grande */
+  letter-spacing: 1px; /* Añadimos un ligero espaciado para mejorar la legibilidad */
+  text-align: center; /* Centramos el título */
+  font-weight: 600; /* Reducido de 700 a 600 para un título elegante pero no tan grueso */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   color: white !important;
 }
@@ -130,7 +137,7 @@ ion-tab-button {
   --color: #2f1b14;
   --color-selected: var(--ion-color-primary);
   transition: all 0.3s ease;
-  font-weight: 700;
+  font-weight: 600; /* Reducido de 700 a 600 */
   
   ion-label {
     color: inherit !important;
@@ -208,16 +215,16 @@ ion-content {
 /* Mejorar contraste en textos */
 ion-label, ion-card-title, ion-card-subtitle, ion-item, p, h1, h2, h3, h4, h5, h6 {
   color: #1a0f0a !important;
-  font-weight: 500;
+  font-weight: 400; /* Reducido a normal (400) para el texto general */
 }
 
 ion-card-title {
-  font-weight: 700 !important;
+  font-weight: 600 !important; /* Reducido de 700 a 600 */
 }
 
 ion-card-subtitle {
   color: #5d4037 !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important; /* Reducido de 600 a 500 */
 }
 
 /* Loading con animación personalizada */
@@ -251,7 +258,7 @@ ion-chip {
   --background: linear-gradient(135deg, var(--pastry-pink) 0%, var(--pastry-peach) 100%);
   --color: var(--ion-color-dark);
   border-radius: 20px;
-  font-weight: 600;
+  font-weight: 500; /* Reducido de 600 a 500 */
 }
 
 /* Animación de entrada para modals */
