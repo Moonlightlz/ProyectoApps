@@ -393,11 +393,11 @@ export class GoogleDriveService {
                 await this.makeFilePublic(file.id);
                 
                 // Generar URLs directas (públicas)
-                // Usar formato que funciona mejor con permisos públicos
-                const directLink = `https://drive.google.com/uc?export=view&id=${file.id}`;
-                const thumbnailLink = `https://lh3.googleusercontent.com/d/${file.id}`;
+                // Usar formato googleusercontent que funciona mejor para imágenes
+                const directLink = `https://lh3.googleusercontent.com/d/${file.id}=w2000`;
+                const thumbnailLink = `https://lh3.googleusercontent.com/d/${file.id}=w400`;
                 
-                console.log('🖼️ URL generada:', directLink);
+                console.log('🖼️ URL generada (googleusercontent):', directLink);
                 console.log('🔍 Thumbnail:', thumbnailLink);
                 
                 resolve({
@@ -494,11 +494,12 @@ export class GoogleDriveService {
       }
 
       // Obtener URL de descarga directa (pública)
-      const directLink = `https://drive.google.com/uc?export=view&id=${fileData.id}`;
-      const thumbnailLink = `https://lh3.googleusercontent.com/d/${fileData.id}`;
+      // Usar formato googleusercontent que funciona mejor para imágenes
+      const directLink = `https://lh3.googleusercontent.com/d/${fileData.id}=w2000`;
+      const thumbnailLink = `https://lh3.googleusercontent.com/d/${fileData.id}=w400`;
 
       console.log('✅ Imagen subida a Drive:', fileData.name);
-      console.log('🔗 URL directa:', directLink);
+      console.log('🔗 URL directa (googleusercontent):', directLink);
       console.log('🔍 Thumbnail:', thumbnailLink);
 
       return {
@@ -562,14 +563,14 @@ export class GoogleDriveService {
    * Este formato funciona mejor para archivos públicos
    */
   getImageUrl(fileId: string): string {
-    // Usar formato de Google User Content que es más confiable
-    return `https://lh3.googleusercontent.com/d/${fileId}`;
+    // Usar formato de Google User Content con tamaño completo
+    return `https://lh3.googleusercontent.com/d/${fileId}=w2000`;
   }
 
   /**
    * Obtener URL de thumbnail (formato alternativo)
    */
-  getThumbnailUrl(fileId: string, size: number = 300): string {
+  getThumbnailUrl(fileId: string, size: number = 400): string {
     return `https://lh3.googleusercontent.com/d/${fileId}=w${size}`;
   }
   
