@@ -417,15 +417,19 @@
             </label>
           </div>
 
-          <div class="native-form-item">
-            <label class="native-label">
+          <div class="native-form-item featured-checkbox-container">
+            <label class="native-label featured-label">
               <input 
                 type="checkbox" 
                 [(ngModel)]="productForm.featured" 
                 name="featured"
                 class="native-checkbox">
-              Producto Destacado
+              <span class="featured-text">
+                <ion-icon name="star" [class.active]="productForm.featured"></ion-icon>
+                Producto Destacado
+              </span>
             </label>
+            <p class="featured-description">Los productos destacados se mostrarán en la página de inicio</p>
           </div>
         </div>
 

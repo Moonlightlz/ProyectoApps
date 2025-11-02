@@ -1,0 +1,165 @@
+// Estilos para la página de inicio (Tab1)
+
+.featured-section {
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-card {
+  height: 100%;
+  margin: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+  }
+
+  &:hover .product-image {
+    transform: scale(1.05);
+  }
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-subtitle {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    ion-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin: 0;
+    }
+  }
+
+  ion-card-content {
+    padding-top: 8px;
+
+    .product-description {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 40px;
+    }
+
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-light);
+
+      .price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ion-color-primary);
+      }
+
+      ion-button {
+        --border-radius: 8px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Animación para cards al cargar
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ion-col {
+  animation: fadeInUp 0.5s ease forwards;
+  
+  @for $i from 1 through 12 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .product-card {
+    .product-image-container {
+      height: 180px;
+    }
+
+    ion-card-header ion-card-title {
+      font-size: 1rem;
+    }
+
+    ion-card-content {
+      .product-description {
+        font-size: 0.85rem;
+      }
+
+      .product-footer {
+        .price {
+          font-size: 1.2rem;
+        }
+      }
+    }
+  }
+}
+
+// Estilos para el cursor clickable
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
