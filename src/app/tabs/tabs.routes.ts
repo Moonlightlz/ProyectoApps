@@ -22,12 +22,7 @@ export const routes: Routes = [
           import('../orders/orders.page').then((m) => m.OrdersPage),
       },
       {
-        path: 'chat',
-        loadComponent: () =>
-          import('../chat/chat.page').then((m) => m.ChatPage),
-      },
-      {
-        path: 'chat/conversation/:id',
+        path: 'conversation',
         loadComponent: () =>
           import('../chat/conversation.page').then((m) => m.ConversationPage),
       },

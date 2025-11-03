@@ -33,8 +33,10 @@ import { OrderService } from '../services/order.service';
 import { AuthService } from '../services/auth.service';
 import { CartService } from '../services/cart.service';
 import { ProductService } from '../services/product.service';
+import { ChatService } from '../services/chat.service';
 import { Order, OrderStatus, OrderStatusLabels, OrderStatusColors } from '../models/order.model';
 import { OrderDetailModalComponent } from '../components/order-detail-modal.component';
+import { UnreadCount } from '../models/chat.model';
 import { addIcons } from 'ionicons';
 import { 
   receiptOutline,
@@ -92,18 +94,23 @@ export class OrdersPage implements OnInit, OnDestroy {
   timeRemaining: number = 60; // segundos
   timerSubscription: Subscription | null = null;
   
+  // Contador de mensajes no leídos
+  unreadCount: UnreadCount = { total: 0, byOrder: {} };
+  
   OrderStatus = OrderStatus;
   OrderStatusLabels = OrderStatusLabels;
   OrderStatusColors = OrderStatusColors;
 
   private ordersSubscription: Subscription | null = null;
   private pendingOrderSubscription: Subscription | null = null;
+  private unreadCountSubscription: Subscription | null = null;
 
   constructor(
     private orderService: OrderService,
     private authService: AuthService,
     private cartService: CartService,
     private productService: ProductService,
+    private chatService: ChatService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
@@ -139,6 +146,12 @@ export class OrdersPage implements OnInit, OnDestroy {
       }
     });
 
+    // Suscribirse al contador de mensajes no leídos
+    this.unreadCountSubscription = this.chatService.unreadCount$.subscribe(count => {
+      this.unreadCount = count;
+      this.cdr.detectChanges();
+    });
+
     // Verificar si viene de crear un pedido
     this.activatedRoute.queryParams.subscribe(params => {
       if (params['pendingOrderId']) {
@@ -157,6 +170,10 @@ export class OrdersPage implements OnInit, OnDestroy {
     if (this.pendingOrderSubscription) {
       this.pendingOrderSubscription.unsubscribe();
     }
+
+    if (this.unreadCountSubscription) {
+      this.unreadCountSubscription.unsubscribe();
+    }
   }
 
   async checkAdminStatus() {
@@ -164,6 +181,7 @@ export class OrdersPage implements OnInit, OnDestroy {
       const isLoggedIn = this.authService.isLoggedIn();
       
       if (!isLoggedIn) {
+        console.log('👤 Usuario no logueado');
         this.isAdmin = false;
         return;
       }
@@ -171,9 +189,11 @@ export class OrdersPage implements OnInit, OnDestroy {
       const currentUser = this.authService.getCurrentUser();
       
       if (currentUser && currentUser.email) {
-        const adminEmail = 'admin@pasteleria.com';
-        this.isAdmin = currentUser.email === adminEmail;
+        const adminEmails = ['admin@pasteleria.com', 'diego@pasteleria-diego.com'];
+        this.isAdmin = adminEmails.includes(currentUser.email);
+        console.log('👤 Usuario:', currentUser.email, '| Es admin:', this.isAdmin);
       } else {
+        console.log('👤 Usuario sin email');
         this.isAdmin = false;
       }
     } catch (error) {
@@ -183,7 +203,10 @@ export class OrdersPage implements OnInit, OnDestroy {
   }
 
   async loadOrders() {
+    console.log('🔄 Cargando pedidos, isAdmin:', this.isAdmin);
+    
     if (this.isAdmin) {
+      console.log('🔑 Cargando como ADMINISTRADOR');
       await this.orderService.loadAllOrders();
       this.ordersSubscription = this.orderService.allOrders$.subscribe(orders => {
         this.orders = orders;
@@ -191,6 +214,7 @@ export class OrdersPage implements OnInit, OnDestroy {
         this.filterOrders();
       });
     } else {
+      console.log('👤 Cargando como USUARIO');
       await this.orderService.loadUserOrders();
       this.ordersSubscription = this.orderService.userOrders$.subscribe(orders => {
         this.orders = orders;
@@ -339,9 +363,28 @@ export class OrdersPage implements OnInit, OnDestroy {
    * Ir al chat con el pedido etiquetado
    */
   goToChat(order: Order) {
-    this.router.navigate(['/tabs/chat'], {
-      queryParams: { orderCode: order.orderCode }
+    console.log('� BOTÓN CHAT CLICKEADO');
+    console.log('�💬 Navegando al chat del pedido:', order);
+    console.log('💬 Order ID:', order.id);
+    console.log('💬 Order Code:', order.orderCode);
+    
+    this.router.navigate(['/tabs/conversation'], {
+      queryParams: { 
+        orderId: order.id,
+        orderCode: order.orderCode
+      }
+    }).then(success => {
+      console.log('✅ Navegación exitosa:', success);
+    }).catch(error => {
+      console.error('❌ Error en navegación:', error);
     });
+  }
+
+  /**
+   * Obtener cantidad de mensajes no leídos para un pedido
+   */
+  getUnreadCountForOrder(orderId: string): number {
+    return this.unreadCount.byOrder[orderId] || 0;
   }
 
   /**

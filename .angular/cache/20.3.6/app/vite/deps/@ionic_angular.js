@@ -72,7 +72,7 @@ import {
   provideComponentInputBinding,
   raf,
   setIonicClasses
-} from "./chunk-GHEAZV2A.js";
+} from "./chunk-E3GNZCLN.js";
 import "./chunk-43TCCNXJ.js";
 import "./chunk-RRSCGKYE.js";
 import "./chunk-VHOQ35RX.js";
@@ -83,15 +83,15 @@ import "./chunk-R4BAPKSM.js";
 import "./chunk-QEE7QVES.js";
 import "./chunk-2H3NLAAY.js";
 import {
-  ActivatedRoute,
-  Router
-} from "./chunk-AH6J7246.js";
-import {
   MaxValidator,
   MinValidator,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR
 } from "./chunk-KCCKN45R.js";
+import {
+  ActivatedRoute,
+  Router
+} from "./chunk-AH6J7246.js";
 import "./chunk-GK4DX4NI.js";
 import {
   CommonModule,

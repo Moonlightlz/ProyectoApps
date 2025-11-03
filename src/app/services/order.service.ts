@@ -323,29 +323,52 @@ export class OrderService {
    */
   async loadUserOrders(): Promise<void> {
     try {
-      const user = this.authService.getCurrentUser();
+      let user = this.authService.getCurrentUser();
+      
+      // Si el usuario no está disponible, esperar un poco y reintentar
+      if (!user) {
+        console.log('⏳ Usuario no disponible, esperando...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        user = this.authService.getCurrentUser();
+      }
+      
       if (!user) {
         console.log('❌ No hay usuario logueado para cargar pedidos');
         return;
       }
 
-      console.log('📦 Cargando pedidos del usuario:', user.uid);
+      console.log('📦 Cargando pedidos del usuario:', user.uid, user.email);
 
       const ordersRef = collection(this.firestore, 'orders');
+      console.log('🔍 Referencia de colección creada:', ordersRef.path);
+      
+      // DEBUG: Obtener todos los pedidos para ver qué userId tienen
+      const allOrdersQuery = query(ordersRef);
+      const allOrdersSnapshot = await getDocs(allOrdersQuery);
+      console.log('🔍 DEBUG - Total pedidos en DB:', allOrdersSnapshot.size);
+      allOrdersSnapshot.forEach(doc => {
+        const data = doc.data();
+        console.log('🔍 DEBUG - Pedido:', doc.id, '| userId guardado:', data['userId'], '| Usuario actual:', user.uid);
+      });
+      
       // Query sin orderBy para evitar necesidad de índice compuesto
       // Los pedidos se ordenarán manualmente en el código
       const q = query(
         ordersRef,
         where('userId', '==', user.uid)
       );
+      
+      console.log('🔍 Query creada, esperando onSnapshot...');
 
       // Suscribirse a cambios en tiempo real
       this.unsubscribeOrders = onSnapshot(
         q, 
         (snapshot) => {
+          console.log('🔔 onSnapshot disparado, documentos encontrados:', snapshot.size);
           const orders: Order[] = [];
 
           snapshot.forEach((doc) => {
+            console.log('📄 Procesando pedido:', doc.id, doc.data());
             const data = doc.data();
             const order: Order = {
               id: doc.id,
@@ -411,15 +434,21 @@ export class OrderService {
       console.log('📦 Cargando todos los pedidos (admin)...');
 
       const ordersRef = collection(this.firestore, 'orders');
+      console.log('🔍 Referencia de colección creada (admin):', ordersRef.path);
+      
       // Query sin orderBy para evitar necesidad de índice
       const q = query(ordersRef);
+      
+      console.log('🔍 Query creada (admin), esperando onSnapshot...');
 
       this.unsubscribeOrders = onSnapshot(
         q, 
         (snapshot) => {
+          console.log('🔔 onSnapshot disparado (admin), documentos encontrados:', snapshot.size);
           const orders: Order[] = [];
 
           snapshot.forEach((doc) => {
+            console.log('📄 Procesando pedido (admin):', doc.id);
             const data = doc.data();
             const order: Order = {
               id: doc.id,

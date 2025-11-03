@@ -165,9 +165,17 @@
               size="small" 
               fill="outline" 
               color="primary"
-              (click)="goToChat(order)">
+              (click)="goToChat(order)"
+              (ionClick)="goToChat(order)"
+              class="chat-button">
               <ion-icon name="chatbubble-ellipses-outline" slot="start"></ion-icon>
               Chat
+              <ion-badge 
+                *ngIf="getUnreadCountForOrder(order.id!) > 0"
+                color="danger"
+                class="unread-badge">
+                {{ getUnreadCountForOrder(order.id!) }}
+              </ion-badge>
             </ion-button>
 
             <ion-button 
