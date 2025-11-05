@@ -87,6 +87,8 @@ npm run ios              # Ejecutar en iOS (solo macOS)
 ### Error al instalar dependencias
 ```powershell
 npm cache clean --force      # Limpiar caché de npm
+npx ng cache clean           # limpiar mas caché
+
 npm run fix                  # Eliminar node_modules y reinstalar
 ```
 
