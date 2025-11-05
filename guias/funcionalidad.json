@@ -1,4 +1,71 @@
 {
+  "project_overview": {
+    "technologies": {
+      "language": "TypeScript",
+      "framework": "Angular",
+      "ui_kit": "Ionic",
+      "mobile_runtime": "Capacitor",
+      "database": "Firebase Firestore",
+      "authentication": "Firebase Authentication",
+      "storage": "Firebase Storage, Google Drive",
+      "styling": "SCSS"
+    },
+    "root_files": [
+      {
+        "file": ".browserslistrc",
+        "description": "Configuración para compartir la lista de navegadores y versiones compatibles entre diferentes herramientas de frontend, como autoprefixer y Babel."
+      },
+      {
+        "file": ".editorconfig",
+        "description": "Ayuda a mantener estilos de codificación consistentes (como indentación y finales de línea) para múltiples desarrolladores que trabajan en el mismo proyecto en varios editores e IDEs."
+      },
+      {
+        "file": ".eslintrc.json",
+        "description": "Archivo de configuración para ESLint, una herramienta de análisis de código estático para identificar y reportar patrones problemáticos encontrados en el código JavaScript/TypeScript."
+      },
+      {
+        "file": ".gitignore",
+        "description": "Especifica los archivos y carpetas que Git debe ignorar y no incluir en el control de versiones, como `node_modules` o archivos de compilación."
+      },
+      {
+        "file": ".nvmrc",
+        "description": "Archivo de configuración para NVM (Node Version Manager), que especifica la versión de Node.js que se debe usar para este proyecto."
+      },
+      {
+        "file": "angular.json",
+        "description": "Archivo de configuración principal de la CLI de Angular. Define la estructura del proyecto, las opciones de compilación, ejecución de pruebas y otras configuraciones del workspace."
+      },
+      {
+        "file": "capacitor.config.ts",
+        "description": "Archivo de configuración para Capacitor, el runtime nativo que permite que la aplicación web se ejecute en iOS, Android y la web como una aplicación nativa."
+      },
+      {
+        "file": "ionic.config.json",
+        "description": "Archivo de configuración específico de Ionic que contiene metadatos sobre el proyecto, como el nombre y el tipo de integración (Angular, Capacitor)."
+      },
+      {
+        "file": "package.json",
+        "description": "Define los metadatos del proyecto, las dependencias de Node.js (bibliotecas) y los scripts de línea de comandos (ej. `npm start`, `npm run build`)."
+      },
+      {
+        "file": "package-lock.json",
+        "description": "Registra la versión exacta de cada dependencia instalada, garantizando que las instalaciones sean consistentes en diferentes máquinas."
+      },
+      {
+        "file": "post-install.js",
+        "description": "Un script que se ejecuta automáticamente después de que se completan las instalaciones de `npm install`. Probablemente se usa para alguna tarea de configuración o parcheo."
+      },
+      {
+        "file": "tsconfig.json",
+        "description": "Archivo de configuración raíz para el compilador de TypeScript. Establece las opciones del compilador y los archivos que se incluirán en la compilación."
+      },
+      {
+        "file": "tsconfig.app.json",
+        "description": "Extiende la configuración de `tsconfig.json` con opciones específicas para la compilación de la aplicación Angular."
+      }
+    ]
+  },
+  
   "application_functionality": [
     {
       "interface": "Login",
