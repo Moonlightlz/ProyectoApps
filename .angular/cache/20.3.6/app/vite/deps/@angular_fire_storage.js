@@ -1,7 +1,7 @@
 import {
   AppCheckInstances,
   AuthInstances
-} from "./chunk-CKERS6P4.js";
+} from "./chunk-B2BWCUNU.js";
 import {
   FirebaseApp,
   FirebaseApps,
@@ -10,23 +10,7 @@ import {
   ɵgetAllInstancesOf,
   ɵgetDefaultInstanceOf,
   ɵzoneWrap
-} from "./chunk-DBEVJVR6.js";
-import {
-  Component,
-  FirebaseError,
-  SDK_VERSION,
-  _getProvider,
-  _isFirebaseServerApp,
-  _registerComponent,
-  createMockUserToken,
-  getApp,
-  getDefaultEmulatorHostnameAndPort,
-  getModularInstance,
-  isCloudWorkstation,
-  pingServer,
-  registerVersion,
-  updateEmulatorBanner
-} from "./chunk-CLXXTND2.js";
+} from "./chunk-I2BGT555.js";
 import "./chunk-VZTTZVBQ.js";
 import {
   InjectionToken,
@@ -47,6 +31,22 @@ import {
   map,
   timer
 } from "./chunk-WQ5CZGEH.js";
+import {
+  Component,
+  FirebaseError,
+  SDK_VERSION,
+  _getProvider,
+  _isFirebaseServerApp,
+  _registerComponent,
+  createMockUserToken,
+  getApp,
+  getDefaultEmulatorHostnameAndPort,
+  getModularInstance,
+  isCloudWorkstation,
+  pingServer,
+  registerVersion,
+  updateEmulatorBanner
+} from "./chunk-CLXXTND2.js";
 import {
   __async
 } from "./chunk-EGSMBJJY.js";
