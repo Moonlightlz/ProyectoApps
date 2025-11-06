@@ -98,72 +98,50 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Especialidades -->
-  <ion-card class="clickable">
-    <ion-card-header>
-      <ion-card-title>🧁 Nuestras Especialidades</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item class="clickable">
-          <ion-label>
-            <h2>🎂 Tortas Personalizadas</h2>
-            <p>Para ocasiones especiales</p>
-          </ion-label>
-        </ion-item>
-        <ion-item class="clickable">
-          <ion-label>
-            <h2>🧁 Cupcakes Gourmet</h2>
-            <p>Variedad de sabores únicos</p>
-          </ion-label>
-        </ion-item>
-        <ion-item class="clickable">
-          <ion-label>
-            <h2>🍰 Postres Tradicionales</h2>
-            <p>Recetas familiares</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+  <!-- Secciones combinadas: Especialidades y Accesos Rápidos -->
+  <section class="info-grid-section">
+    <ion-grid>
+      <ion-row>
+        <!-- Columna de Especialidades -->
+        <ion-col size="12" size-md="6">
+          <h2 class="section-title">Nuestras Especialidades</h2>
+          <ion-list lines="none" class="specialties-list">
+            <ion-item class="clickable">
+              <ion-icon name="cake-outline" slot="start" color="primary"></ion-icon>
+              <ion-label>
+                <h3>Tortas Personalizadas</h3>
+                <p>Para tus momentos únicos</p>
+              </ion-label>
+            </ion-item>
+            <ion-item class="clickable">
+              <ion-icon name="ice-cream-outline" slot="start" color="secondary"></ion-icon>
+              <ion-label>
+                <h3>Cupcakes Gourmet</h3>
+                <p>Explosión de sabores</p>
+              </ion-label>
+            </ion-item>
+            <ion-item class="clickable">
+              <ion-icon name="cafe-outline" slot="start" color="tertiary"></ion-icon>
+              <ion-label>
+                <h3>Postres y Bebidas</h3>
+                <p>El complemento perfecto</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-col>
 
-  <!-- Accesos rápidos -->
-  <ion-card class="clickable">
-    <ion-card-header>
-      <ion-card-title>🚀 Accesos Rápidos</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/catalog" fill="outline" color="primary">
-              <ion-icon name="restaurant" slot="start"></ion-icon>
-              Ver Menú
-            </ion-button>
-          </ion-col>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/cart" fill="outline" color="secondary">
-              <ion-icon name="basket" slot="start"></ion-icon>
-              Mi Carrito
-            </ion-button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/orders" fill="outline" color="tertiary">
-              <ion-icon name="receipt" slot="start"></ion-icon>
-              Mis Pedidos
-            </ion-button>
-          </ion-col>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/chat" fill="outline" color="success">
-              <ion-icon name="chatbubbles" slot="start"></ion-icon>
-              Chat
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
+        <!-- Columna de Accesos Rápidos -->
+        <ion-col size="12" size-md="6">
+          <h2 class="section-title">Accesos Rápidos</h2>
+          <div class="quick-links-grid">
+            <ion-button expand="block" routerLink="/tabs/catalog" fill="outline" color="primary"><ion-icon name="book-outline" slot="start"></ion-icon>Ver Catálogo</ion-button>
+            <ion-button expand="block" routerLink="/tabs/cart" fill="outline" color="secondary"><ion-icon name="cart-outline" slot="start"></ion-icon>Mi Carrito</ion-button>
+            <ion-button expand="block" routerLink="/tabs/orders" fill="outline" color="tertiary"><ion-icon name="receipt-outline" slot="start"></ion-icon>Mis Pedidos</ion-button>
+            <ion-button expand="block" routerLink="/tabs/profile" fill="outline" color="warning"><ion-icon name="person-circle-outline" slot="start"></ion-icon>Mi Perfil</ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
 
 </ion-content>

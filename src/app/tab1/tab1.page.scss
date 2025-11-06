@@ -28,8 +28,29 @@
 
 .featured-section {
   margin: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: none;
+  background: transparent;
+  --background: transparent;
+
+  ion-card-header {
+    text-align: center;
+    padding-bottom: 16px;
+  }
+
+  ion-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--ion-color-tertiary);
+    text-transform: none;
+    letter-spacing: 0.5px;
+  }
+
+  ion-card-subtitle {
+    font-size: 1rem;
+    color: var(--ion-color-medium-shade);
+  }
 }
 
 .product-card {
@@ -188,4 +209,83 @@ ion-col {
 .clickable {
   cursor: pointer;
   user-select: none;
+}
+
+.info-grid-section {
+  padding: 16px;
+  margin: 16px;
+  background: var(--ion-color-light-tint);
+  border-radius: 16px;
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 24px;
+  }
+
+  .specialties-list {
+    background: transparent;
+
+    ion-item {
+      --background: transparent;
+      --padding-start: 0;
+      margin-bottom: 16px;
+      
+      ion-icon {
+        font-size: 1.8rem;
+        margin-right: 16px;
+      }
+
+      h3 {
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 4px;
+      }
+
+      p {
+        color: var(--ion-color-medium-shade);
+      }
+    }
+  }
+
+  .quick-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    ion-button {
+      --border-radius: 10px;
+      height: 50px;
+      font-weight: 600;
+      text-transform: none;
+      font-size: 0.9rem;
+    }
+  }
+
+  // Estilos para la división de columnas
+  ion-col[size-md="6"] {
+    // En móvil, cuando las columnas se apilan, añade un espacio superior a la segunda columna
+    &:last-child {
+      margin-top: 24px;
+    }
+  }
+
+  // En pantallas medianas o más grandes (a partir de 768px)
+  @media (min-width: 768px) {
+    ion-col[size-md="6"] {
+      &:last-child {
+        margin-top: 0; // Resetea el margen superior
+        border-left: 1px solid var(--ion-color-step-200, #cccccc); // Línea divisoria
+        padding-left: 24px; // Espacio a la izquierda de la línea
+      }
+
+      &:first-child {
+        padding-right: 24px; // Espacio a la derecha de la primera columna
+      }
+    }
+  }
 }
