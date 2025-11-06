@@ -61,6 +61,7 @@ export class ConversationPage implements OnInit, OnDestroy {
   isAdmin: boolean = false;
 
   private messagesSubscription: Subscription | null = null;
+  private routeParamsSubscription: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -75,19 +76,34 @@ export class ConversationPage implements OnInit, OnDestroy {
   async ngOnInit() {
     console.log('💬 Conversation page initialized');
     
-    // Obtener parámetros de la ruta
-    this.orderId = this.route.snapshot.queryParamMap.get('orderId');
-    this.orderCode = this.route.snapshot.queryParamMap.get('orderCode');
+    // Escuchar cambios en query params — permite abrir conversaciones distintas sin recrear el componente
+    this.routeParamsSubscription = this.route.queryParamMap.subscribe(async (params) => {
+      const newOrderId = params.get('orderId');
+      const newOrderCode = params.get('orderCode');
 
-    console.log('💬 OrderId:', this.orderId);
-    console.log('💬 OrderCode:', this.orderCode);
-    console.log('💬 Query params:', this.route.snapshot.queryParams);
+      console.log('💬 Query params changed:', { orderId: newOrderId, orderCode: newOrderCode });
 
-    if (!this.orderId) {
-      console.error('❌ No se proporcionó orderId');
-      this.router.navigate(['/tabs/orders']);
-      return;
-    }
+      if (!newOrderId) {
+        console.error('❌ No se proporcionó orderId en query params');
+        this.router.navigate(['/tabs/orders']);
+        return;
+      }
+
+      // Si cambió el pedido, limpiar listeners previos y recargar
+      if (this.orderId !== newOrderId) {
+        console.log('💬 Cambiando conversación de', this.orderId, 'a', newOrderId);
+        // limpiar listeners y estado local
+        this.chatService.unsubscribe();
+        this.messages = [];
+        this.orderId = newOrderId;
+        this.orderCode = newOrderCode;
+
+        // Cargar pedido y mensajes para el nuevo orderId
+        await this.loadOrder();
+        this.loadMessages();
+        await this.chatService.markAsRead(this.orderId);
+      }
+    });
 
     // Obtener usuario actual
     const user = this.authService.getCurrentUser();
@@ -101,16 +117,7 @@ export class ConversationPage implements OnInit, OnDestroy {
     const adminEmails = ['admin@pasteleria.com', 'diego@pasteleria-diego.com'];
     this.isAdmin = adminEmails.includes(user.email || '');
 
-    // Cargar el pedido
-    await this.loadOrder();
-
-    // Cargar mensajes
-    this.loadMessages();
-
-    // Marcar como leídos
-    await this.chatService.markAsRead(this.orderId);
-
-    // Suscribirse a nuevos mensajes
+    // Suscribirse a nuevos mensajes (el stream será actualizado por loadMessages)
     this.messagesSubscription = this.chatService.messages$.subscribe(messages => {
       console.log('💬 Mensajes recibidos en la página:', messages.length);
       console.log('💬 Mensajes:', messages);
@@ -122,6 +129,9 @@ export class ConversationPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.messagesSubscription) {
       this.messagesSubscription.unsubscribe();
+    }
+    if (this.routeParamsSubscription) {
+      this.routeParamsSubscription.unsubscribe();
     }
     this.chatService.unsubscribe();
   }
