@@ -11,7 +11,8 @@ import {
   query, 
   where, 
   orderBy, 
-  addDoc 
+  addDoc,
+  limit
 } from '@angular/fire/firestore';
 import { Storage, ref, uploadString, getDownloadURL, deleteObject } from '@angular/fire/storage';
 import { Product, CreateProductRequest, UpdateProductRequest, ProductCategory, DEFAULT_CATEGORIES } from '../models/product.model';
@@ -378,49 +379,51 @@ export class ProductService {
   }
 
   /**
-   * Obtener productos por categoría
+   * Obtiene productos de una categoría específica, con un límite opcional.
+   * @param categoryName El nombre de la categoría a filtrar.
+   * @param limitCount El número máximo de productos a devolver.
+   * @returns Una promesa con un array de productos.
    */
-  async getProductsByCategory(categoryId: string): Promise<Product[]> {
+  async getProductsByCategory(categoryName: string, limitCount?: number): Promise<Product[]> {
     try {
+      console.log(`🔥 Firestore: Buscando productos en categoría '${categoryName}' con límite ${limitCount}`);
+      
+      // Primero, obtenemos el ID de la categoría a partir de su nombre.
+      const categoriesRef = collection(this.firestore, 'categories');
+      const categoryQuery = query(categoriesRef, where('name', '==', categoryName));
+      const categorySnapshot = await getDocs(categoryQuery);
+
+      if (categorySnapshot.empty) {
+        console.warn(`⚠️ No se encontró la categoría: ${categoryName}`);
+        return [];
+      }
+      
+      const categoryId = categorySnapshot.docs[0].id;
+      
+      // Ahora, buscamos los productos que pertenecen a esa categoría.
       const productsRef = collection(this.firestore, 'products');
-      const q = query(
-        productsRef, 
-        where('category.id', '==', categoryId),
+      
+      // Construimos la consulta dinámicamente
+      const q = limitCount 
+        ? query(
+            productsRef,
+            where('isAvailable', '==', true),
+            where('category.id', '==', categoryId),
+            limit(limitCount)
+          )
+        : query(
+            productsRef,
         where('isAvailable', '==', true),
-        orderBy('name', 'asc')
+        where('category.id', '==', categoryId)
       );
       const querySnapshot = await getDocs(q);
       
       const products: Product[] = [];
       querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        products.push({
-          id: data['id'],
-          name: data['name'],
-          description: data['description'],
-          shortDescription: data['shortDescription'],
-          price: data['price'],
-          imageUrl: data['imageUrl'],
-          images: data['images'],
-          category: data['category'],
-          categoryId: data['categoryId'],
-          isAvailable: data['isAvailable'],
-          featured: data['featured'],
-          preparationTime: data['preparationTime'],
-          servingSize: data['servingSize'],
-          createdAt: data['createdAt']?.toDate() || new Date(),
-          updatedAt: data['updatedAt']?.toDate() || new Date(),
-          createdBy: data['createdBy'],
-          ingredients: data['ingredients'] || [],
-          allergens: data['allergens'] || [],
-          nutritionalInfo: data['nutritionalInfo'],
-          variants: data['variants'] || [],
-          driveFileId: data['driveFileId'],
-          driveFileIds: data['driveFileIds'],
-          imageSource: data['imageSource']
-        } as Product);
+        products.push({ id: doc.id, ...doc.data() } as Product);
       });
       
+      console.log(`✅ Firestore: Se encontraron ${products.length} productos.`);
       return products;
     } catch (error) {
       console.error('Error obteniendo productos por categoría:', error);

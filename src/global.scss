@@ -1,3 +1,10 @@
+/* Tema personalizado de Pastelería D'Diego (importado ANTES de los estilos de Ionic) */
+@use './theme/pastry-animations';
+@use './theme/pastry-backgrounds';
+
+/* Importar fuentes personalizadas desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -24,10 +31,6 @@
  * For more information on global stylesheets, visit the documentation:
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
-
-/* Tema personalizado de Pastelería D'Diego (importado DESPUÉS de los estilos de Ionic) */
-@import './theme/pastry-animations.scss';
-@import './theme/pastry-backgrounds.scss';
 
 /**
  * Ionic Dark Mode
