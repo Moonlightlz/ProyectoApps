@@ -20,6 +20,9 @@
   margin-bottom: 8px;
   border-radius: 8px;
   --background: var(--ion-color-light);
+  display: flex;
+  align-items: center;
+  gap: 12px;
   
   .product-image {
     width: 60px;
@@ -27,15 +30,24 @@
     border-radius: 8px;
     object-fit: cover;
     margin-right: 12px;
+    flex-shrink: 0;
   }
   
   .product-info {
     flex: 1;
+    min-width: 0; /* allow text to truncate instead of expanding parent */
     
     h2 {
       font-size: 1.1em;
       font-weight: 600;
       margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* limit to 2 lines */
+  line-clamp: 2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word;
     }
     
     p {

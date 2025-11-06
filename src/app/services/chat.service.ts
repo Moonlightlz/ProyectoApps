@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, updateDoc, query, where, onSnapshot, Timestamp, getDocs, writeBatch, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, addDoc, updateDoc, query, where, onSnapshot, orderBy, Timestamp, getDocs, writeBatch, getDoc } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
 import { ChatMessage, ChatConversation, UnreadCount } from '../models/chat.model';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -147,7 +147,26 @@ export class ChatService {
       const messagesRef = collection(this.firestore, `chatConversations/${conversationId}/messages`);
       console.log('💬 Enviando mensaje a conversación:', conversationId);
       console.log('💬 Datos del mensaje:', newMessage);
-      
+      // Optimistic UI: añadir mensaje localmente para que el usuario lo vea instantáneamente
+      try {
+        const current = this.messagesSubject.getValue() || [];
+        const optimisticMsg = {
+          id: `local-${Date.now()}`,
+          orderId: newMessage.orderId,
+          orderCode: newMessage.orderCode,
+          senderId: newMessage.senderId,
+          senderName: newMessage.senderName,
+          senderEmail: newMessage.senderEmail,
+          isAdmin: newMessage.isAdmin,
+          message: newMessage.message,
+          timestamp: new Date(),
+          read: false
+        };
+        this.messagesSubject.next([...current, optimisticMsg]);
+      } catch (e) {
+        console.warn('No se pudo añadir optimistic message al subject:', e);
+      }
+
       const docRef = await addDoc(messagesRef, newMessage);
       console.log('💬 Mensaje guardado con ID:', docRef.id);
 
@@ -194,13 +213,15 @@ export class ChatService {
 
         const conversationId = snapshot.docs[0].id;
         console.log('💬 Escuchando mensajes de conversación:', conversationId);
-        const messagesRef = collection(this.firestore, `chatConversations/${conversationId}/messages`);
+        // Escuchar mensajes ordenados por timestamp para recibirlos en el orden correcto
+        const messagesQuery = query(collection(this.firestore, `chatConversations/${conversationId}/messages`), orderBy('timestamp', 'asc'));
 
-        this.unsubscribeMessages = onSnapshot(messagesRef, (messagesSnapshot) => {
-          console.log('💬 Snapshot de mensajes recibido, cantidad:', messagesSnapshot.size);
+        // includeMetadataChanges ayuda a detectar si los datos vienen de cache / hay writes pendientes
+        this.unsubscribeMessages = onSnapshot(messagesQuery, { includeMetadataChanges: true } as any, (messagesSnapshot: any) => {
+          console.log('💬 Snapshot de mensajes recibido, cantidad:', messagesSnapshot.size, 'fromCache:', messagesSnapshot.metadata?.fromCache, 'hasPendingWrites:', messagesSnapshot.metadata?.hasPendingWrites);
           const messages: ChatMessage[] = [];
 
-          messagesSnapshot.forEach((doc) => {
+          messagesSnapshot.forEach((doc: any) => {
             const data = doc.data();
             console.log('💬 Mensaje leído:', doc.id, data);
             messages.push({
@@ -219,7 +240,20 @@ export class ChatService {
 
           messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
           console.log('💬 Emitiendo mensajes al subject:', messages.length);
-          this.messagesSubject.next(messages);
+          // Simple dedupe: eliminar mensajes locales optimistas si ya existen en snapshot
+          try {
+            const current = this.messagesSubject.getValue() || [];
+            const optimistic = current.filter(m => m.id && String(m.id).startsWith('local-'));
+            if (optimistic.length > 0) {
+              // eliminar optimistics que coincidan por texto y sender
+              const filtered = messages.filter(serverMsg => !optimistic.some(opt => opt.senderId === serverMsg.senderId && opt.message === serverMsg.message));
+              this.messagesSubject.next(filtered);
+            } else {
+              this.messagesSubject.next(messages);
+            }
+          } catch (e) {
+            this.messagesSubject.next(messages);
+          }
         });
       });
     } catch (error) {
