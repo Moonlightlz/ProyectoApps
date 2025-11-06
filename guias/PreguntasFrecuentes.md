@@ -115,18 +115,107 @@ C) ¿Cómo probar push/real-time notifications o chat?
 D) ¿Dónde están las reglas de seguridad de Firestore?
 - Las reglas de seguridad NO están en este repo; se definen en la consola de Firebase o en un proyecto de Infrastructure/Functions si existe. Recomendación: exportarlas y mantenerlas en `infrastructure/`.
 
-E) ¿Cómo agregar pagos (Stripe, MercadoPago)?
-- Recomendación: crear un `payment.service.ts` y usar un backend seguro (Cloud Functions o servidor propio) para manejar llaves secretas y crear intenciones de pago.
+E) Comandos útiles de Git / GitHub
+
+Aquí tienes una lista concisa de comandos Git / GitHub que usamos frecuentemente en este proyecto (ejemplos para PowerShell). Sustituye `<...>` por valores reales.
+
+- Configuración inicial (una sola vez):
+
+```powershell
+git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"
+```
+
+- Clonar el repositorio:
+
+```powershell
+git clone https://github.com/<usuario>/<repo>.git
+cd <repo>
+```
+
+- Ver estado y cambios locales:
+
+```powershell
+git status
+git diff            # ver cambios sin stage
+git add .           # agregar todos los cambios
+git commit -m "Mensaje descriptivo"
+```
+
+- Ramas y flujo de trabajo (feature branch):
+
+```powershell
+git checkout -b feature/nombre-de-la-feature   # crear y cambiar a rama
+git push -u origin feature/nombre-de-la-feature
+```
+
+- Sincronizar con la rama principal (pull / rebase):
+
+```powershell
+git checkout main
+git pull origin main
+# o (rebase para un historial más limpio)
+git checkout feature/nombre-de-la-feature
+git pull --rebase origin main
+```
+
+- Fusionar (merge) y crear Pull Request (GitHub):
+
+```powershell
+git checkout main
+git merge feature/nombre-de-la-feature
+git push origin main
+# Preferible: crear Pull Request en GitHub desde la rama feature
+# Usando la CLI de GitHub (gh):
+gh auth login
+gh pr create --base main --head <usuario>:feature/nombre-de-la-feature --title "Título" --body "Descripción"
+```
+
+- Etiquetar una release y subir la etiqueta:
+
+```powershell
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+- Revertir o resetear (con cuidado):
+
+```powershell
+# Deshacer el último commit pero mantener cambios en working tree
+git reset --soft HEAD~1
+
+# Forzar a un estado anterior (cuidado: borra cambios locales)
+git reset --hard <commit-hash>
+
+# Revertir un commit público (crea un nuevo commit que invierte los cambios)
+git revert <commit-hash>
+```
+
+- Stash (guardar temporalmente cambios no comiteados):
+
+```powershell
+git stash         # guarda cambios
+git stash list
+git stash pop     # aplica y quita de la pila
+```
+
+- Historial y diffs útiles:
+
+```powershell
+git log --oneline --graph --decorate --all
+git show <commit-hash>
+git diff <branchA>..<branchB>
+```
+
+- Empuje forzado seguro (usar con --force-with-lease):
+
+```powershell
+git push --force-with-lease origin feature/nombre-de-la-feature
+```
+
+Notas rápidas:
+- Si usas `gh` (GitHub CLI) puedes crear PRs, revisar issues y más desde la terminal (`gh pr create`, `gh pr status`, `gh pr merge`).
+- En Windows PowerShell los comandos Git funcionan igual; solo asegúrate de tener Git y (si usas) GitHub CLI `gh` instalados.
+- Nunca hagas `--force` en `main` salvo que entiendas las consecuencias; prefiere `--force-with-lease` para evitar sobrescribir trabajo ajeno.
 
 ---
-
-Si quieres, puedo:
-- Añadir ejemplos de líneas específicas (con número de archivo y línea) para los métodos (`addDoc`, `updateDoc`) o para el `tsconfig.target`.
-- Generar una versión imprimible (PDF) de este FAQ.
-- Añadir las preguntas a `README.md` o `docs/FAQ.md` en otro formato.
-
----
-
-**Archivo generado:** `guias/PreguntasFrecuentes.md`
-
-Estado del TODO: marcaré este item como completado en la lista de tareas.
