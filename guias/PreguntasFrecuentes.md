@@ -14,7 +14,30 @@ Este archivo responde preguntas técnicas habituales sobre el proyecto y añade 
   - `www/` — carpeta generada con los assets compilados (build output)
   - `package.json`, `angular.json`, `tsconfig.json`, `ionic.config.json` — configuración del proyecto
 
-2) ¿Dónde está el código o método que inicia la transpilación?
+2) ¿Qué es Capacitor y qué funciones tiene en el proyecto?
+- Capacitor es el framework nativo que permite convertir la app web (Angular/Ionic) en una app móvil nativa:
+  - Funciones en el proyecto:
+    - Bridge web-nativo: permite llamar a APIs nativas desde TypeScript (cámara, filesystem, etc.).
+    - Gestiona configuración nativa en `android/` y `ios/`.
+    - Plugins usados:
+      - `@capacitor/camera` — acceso a cámara para fotos de productos
+      - `@capacitor/filesystem` — guardar/leer archivos localmente
+      - `@capacitor/app` — eventos del ciclo de vida de la app
+      - `@capacitor/haptics` — feedback táctil (vibración)
+      - `@capacitor/keyboard` — manejo del teclado virtual
+      - `@capacitor/status-bar` — control de la barra de estado
+  - Comandos clave:
+    ```powershell
+    npx cap add android     # añadir plataforma Android
+    npx cap sync           # sincronizar www/ con nativo
+    npx cap open android   # abrir en Android Studio
+    ```
+  - Configuración:
+    - `capacitor.config.ts` — config general
+    - `android/app/build.gradle` — config Android
+    - `ios/App/App.xcodeproj` — config iOS
+
+3) ¿Dónde está el código o método que inicia la transpilación?
 - La transpilación la dispara el build de Angular/Ionic. Los puntos relevantes:
   - `package.json` — scripts: `ionic build`, `ng run app:build` u `npm run build`.
   - `angular.json` — configuración de build (project → architect → build → options)
@@ -117,10 +140,6 @@ D) ¿Dónde están las reglas de seguridad de Firestore?
 
 E) Comandos útiles de Git / GitHub
 
-Aquí tienes una lista concisa de comandos Git / GitHub que usamos frecuentemente en este proyecto (ejemplos para PowerShell). Sustituye `<...>` por valores reales.
-
-- Configuración inicial (una sola vez):
-
 ```powershell
 git config --global user.name "Tu Nombre"
 git config --global user.email "tu@email.com"
@@ -212,10 +231,5 @@ git diff <branchA>..<branchB>
 ```powershell
 git push --force-with-lease origin feature/nombre-de-la-feature
 ```
-
-Notas rápidas:
-- Si usas `gh` (GitHub CLI) puedes crear PRs, revisar issues y más desde la terminal (`gh pr create`, `gh pr status`, `gh pr merge`).
-- En Windows PowerShell los comandos Git funcionan igual; solo asegúrate de tener Git y (si usas) GitHub CLI `gh` instalados.
-- Nunca hagas `--force` en `main` salvo que entiendas las consecuencias; prefiere `--force-with-lease` para evitar sobrescribir trabajo ajeno.
 
 ---
