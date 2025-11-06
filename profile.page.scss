@@ -1,0 +1,91 @@
+/* Estilos para la página de perfil */
+
+.profile-header {
+  position: relative; /* Requerido para elementos decorativos internos */
+  overflow: hidden; /* Oculta los elementos que se desbordan */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px; /* Más espaciado vertical para un look premium */
+  background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); /* Degradado más fresco y moderno */
+  border-radius: 20px; /* Bordes más redondeados */
+  margin-bottom: 24px;
+  box-shadow: 0 8px 25px rgba(143, 211, 244, 0.5); /* Sombra de color a juego con el tema */
+  color: white; /* Color de texto base para los elementos hijos */
+
+  /* Elemento decorativo en forma de onda para dar profundidad */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -20%;
+    width: 140%;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translateY(50%);
+    z-index: 0; /* Se posiciona detrás del contenido */
+  }
+}
+
+.avatar-container {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0; /* Evita que el avatar se encoja */
+  z-index: 1; /* Se asegura que esté por encima de la onda */
+}
+
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border: 4px solid #e0f7fa; /* Borde más claro para el avatar */
+  --border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.camera-overlay {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px; /* Fondo aqua más oscuro */
+  background: #00798a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  color: white; /* Icono blanco para contraste */
+  transition: transform 0.2s ease-in-out;
+}
+
+.avatar-container:hover .camera-overlay {
+  transform: scale(1.1);
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0; /* Permite que el texto se ajuste si es muy largo */
+  z-index: 1; /* Se asegura que esté por encima de la onda */
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white; /* Texto blanco para el nombre */
+  margin: 0 0 4px 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); /* Sombra para mejorar legibilidad */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-email { /* Texto blanco con opacidad para el email */
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

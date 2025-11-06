@@ -26,7 +26,14 @@
 
   <!-- Lista de mensajes del chat -->
   <div class="message-list" *ngIf="!isChatClosed">
-    <div *ngFor="let message of messages" class="message-wrapper">
+    <div *ngFor="let message of messages" class="message-wrapper" [ngClass]="{
+        'sent-wrapper': message.sender === 'user',
+        'received-wrapper': message.sender === 'admin'
+      }">
+      <ion-avatar *ngIf="message.sender === 'admin'" class="chat-avatar">
+        <img src="assets/icon/logo_small.png" alt="Admin avatar">
+      </ion-avatar>
+
       <div class="message-bubble" [ngClass]="{
           'sent': message.sender === 'user',
           'received': message.sender === 'admin'
@@ -42,6 +49,10 @@
 
         <div class="time">{{ message.timestamp | date:'shortTime' }}</div>
       </div>
+
+      <ion-avatar *ngIf="message.sender === 'user'" class="chat-avatar">
+        <img src="assets/icon/user-placeholder.png" alt="User avatar">
+      </ion-avatar>
     </div>
   </div>
 </ion-content>
