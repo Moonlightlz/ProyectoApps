@@ -1,3 +1,4 @@
+//Diseño del chat con el cliente.
 export interface ChatMessage {
   id?: string;
   orderId: string;
@@ -10,6 +11,8 @@ export interface ChatMessage {
   timestamp: Date;
   read: boolean;
 }
+
+
 
 export interface ChatConversation {
   id?: string;
