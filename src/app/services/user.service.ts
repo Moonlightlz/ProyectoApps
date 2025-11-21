@@ -11,7 +11,7 @@ export class UserService {
     'diego@pasteleria-diego.com',
     'administrador@pasteleria-diego.com'
   ];
-
+//hola
   constructor() { }
 
   // verifica si un usuario es administrador basado en su uid
