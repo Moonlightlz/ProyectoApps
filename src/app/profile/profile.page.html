@@ -292,6 +292,17 @@
     <!-- Quick Actions Card -->
     <ion-card>
       <ion-card-header>
+        <ion-card-title>Preferencias</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-label>Tema oscuro</ion-label>
+          <ion-toggle slot="end" [checked]="isDark" (ionChange)="toggleTheme($event)"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+    <ion-card>
+      <ion-card-header>
         <ion-card-title>Acciones Rápidas</ion-card-title>
       </ion-card-header>
       

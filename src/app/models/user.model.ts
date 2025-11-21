@@ -57,6 +57,8 @@ export interface UserPreferences {
   dietary?: DietaryRestrictions;
   language: string;
   currency: string;
+  // tema preferido: 'light' | 'dark' | 'system'
+  theme?: 'light' | 'dark' | 'system';
 }
 
 export interface NotificationSettings {

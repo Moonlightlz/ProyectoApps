@@ -25,6 +25,7 @@ import {
   IonSkeletonText,
   IonRefresher,
   IonRefresherContent,
+  IonToggle,
   ToastController,
   AlertController,
   LoadingController
@@ -82,6 +83,7 @@ import {
     IonSkeletonText,
     IonRefresher,
     IonRefresherContent,
+    IonToggle,
     CommonModule, 
     FormsModule
   ]
@@ -90,6 +92,9 @@ export class ProfilePage implements OnInit {
   user: User | null = null;
   isLoading = true;
   isEditing = false;
+  // tema del usuario
+  theme: 'light' | 'dark' | 'system' = 'system';
+  isDark = false;
   
   // Estadísticas
   favoritesCount = 0;
@@ -154,6 +159,11 @@ export class ProfilePage implements OnInit {
       if (currentUser) {
         this.user = await this.userService.getUserProfile(currentUser.uid);
         if (this.user) {
+          // Aplicar tema guardado en el perfil
+          const savedTheme = this.user.profile?.preferences?.theme || 'system';
+          this.theme = savedTheme as any;
+          this.isDark = savedTheme === 'dark';
+          this.applyTheme(savedTheme as any);
           // Inicializar datos editables
           this.editData.name = this.user.profile?.name || this.user.displayName || '';
           this.editData.phone = this.user.profile?.phone || this.user.phoneNumber || '';
@@ -167,6 +177,59 @@ export class ProfilePage implements OnInit {
       await this.showToast('Error al cargar el perfil', 'danger');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  applyTheme(theme: 'light' | 'dark' | 'system') {
+    const el = document.documentElement;
+    if (theme === 'dark') {
+      el.classList.add('dark');
+    } else {
+      // 'light' or 'system' -> remove explicit dark class so system can decide
+      el.classList.remove('dark');
+    }
+  }
+
+  async toggleTheme(event: any) {
+    // event may be a native event or boolean
+    const checked = event && event.detail ? event.detail.checked : !!event;
+    this.isDark = !!checked;
+    const newTheme = this.isDark ? 'dark' : 'light';
+    this.theme = newTheme as any;
+    this.applyTheme(this.theme);
+    console.log('ProfilePage: toggleTheme -> theme=', this.theme, 'isDark=', this.isDark, 'html.classList=', document.documentElement.className);
+    if (!this.user) return;
+
+    try {
+      // Merge preferences safely using existing profile values
+      const currentProfile = this.user.profile || {} as any;
+      const newPreferences = {
+        ...currentProfile.preferences,
+        ...(currentProfile.preferences || {}),
+        theme: this.theme
+      };
+
+      await this.userService.updateUserProfile(this.user.uid, {
+        profile: {
+          ...currentProfile,
+          preferences: newPreferences
+        }
+      } as any);
+
+      // actualizar cache local de forma segura
+      if (!this.user.profile) {
+        this.user.profile = { preferences: newPreferences } as any;
+      } else {
+        this.user.profile = {
+          ...this.user.profile,
+          preferences: newPreferences
+        } as any;
+      }
+
+      await this.showToast('Preferencia de tema guardada', 'success');
+    } catch (error) {
+      console.error('Error guardando preferencia de tema:', error);
+      await this.showToast('Error al guardar preferencia', 'danger');
     }
   }
 
@@ -404,7 +467,8 @@ export class ProfilePage implements OnInit {
       duration: 3000,
       color,
       position: 'top',
-      icon: color === 'success' ? 'checkmarkCircle' : undefined
+      // use kebab-case icon name to avoid Ionicons lookup issues
+      icon: color === 'success' ? 'checkmark-circle' : undefined
     });
     await toast.present();
   }
