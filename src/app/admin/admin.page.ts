@@ -11,7 +11,7 @@ import { PhotoService } from '../services/photo';
 import { GoogleDriveService } from '../services/google-drive.service';
 import { IngredientsAllergensService } from '../services/ingredients-allergens.service';
 import { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
-
+//holitas
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.page.html',
